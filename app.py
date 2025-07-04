@@ -193,7 +193,18 @@ async def search_files(
                 
                 # Filename search
                 if type in ["filename", "both"] and q.lower() in filename.lower():
-                    score = 0.9 if filename.lower() == q.lower() else 0.7
+                    filename_lower = filename.lower()
+                    query_lower = q.lower()
+                    
+                    if filename_lower == query_lower:
+                        # Exact filename match gets perfect score
+                        score = 1.0
+                    elif filename_lower.startswith(query_lower):
+                        # Filename starts with query gets high score
+                        score = 0.9
+                    else:
+                        # Filename contains query gets good score
+                        score = 0.7
                     match_type = "filename"
                 
                 # Content search for text files
@@ -203,9 +214,11 @@ async def search_files(
                             lines = f.readlines()
                             for i, line in enumerate(lines):
                                 if q.lower() in line.lower():
-                                    if not match_type or score < 0.8:
-                                        score = 0.8
-                                        match_type = "content"
+                                    # Only update if no filename match or content match is better
+                                    content_score = 0.6 if line.strip().lower() == q.lower() else 0.4
+                                    if not match_type or (match_type == "content" and content_score > score) or (match_type == "filename" and score < 0.8):
+                                        score = max(score, content_score) if match_type == "filename" else content_score
+                                        match_type = "content" if not match_type or match_type == "content" else match_type
                                         snippet = line.strip()[:100]
                                         line_number = i + 1
                                     break
