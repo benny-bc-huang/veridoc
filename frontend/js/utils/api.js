@@ -35,6 +35,13 @@ class ApiClient {
             if (error instanceof ApiError) {
                 throw error;
             }
+            console.error('API Request Error Details:', {
+                url,
+                endpoint,
+                options,
+                error: error.message,
+                stack: error.stack
+            });
             throw new ApiError(0, 'Network error or server unavailable', { originalError: error });
         }
     }
