@@ -260,6 +260,21 @@ python app.py
 - **Phase 3**: 📋 Planned - CLI integration and terminal functionality
 - **Phase 4**: 📋 Planned - Open source preparation and polish
 
+### Git Integration
+Git repository has been initialized with:
+- Comprehensive .gitignore for Python/Node.js projects
+- Initial commit with Phase 1 MVP completion
+- Ready for GitHub repository setup
+
+**To set up GitHub repository:**
+1. Create a new repository on GitHub: https://github.com/new
+2. Repository name: `veridoc`
+3. Add remote and push:
+   ```bash
+   git remote add origin https://github.com/yourusername/veridoc.git
+   git push -u origin main
+   ```
+
 ### Running Tests
 ```bash
 # Python tests
@@ -408,4 +423,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - Terminal panel UI prepared (Phase 3 placeholder)
 - Ready for Phase 2 development
 
-**Note**: This is a development version without git integration. The project is not yet packaged for distribution.
+**Note**: This is a development version with git integration. The project is not yet packaged for distribution.
