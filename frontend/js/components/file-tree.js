@@ -9,7 +9,6 @@ class FileTree {
         this.api = apiClient;
         this.currentPath = '/';
         this.selectedItem = null;
-        this.expandedDirs = new Set(['/']);
         this.cache = new Map();
         
         this.init();
@@ -122,54 +121,6 @@ class FileTree {
         console.log('FileTree: Root rendered successfully');
     }
 
-    /**
-     * Render children in existing container
-     */
-    renderChildren(data, parentElement) {
-        const path = parentElement.dataset.path;
-        
-        // Find or create children container
-        let childrenContainer = parentElement.querySelector('.tree-children');
-        if (!childrenContainer) {
-            childrenContainer = document.createElement('div');
-            childrenContainer.className = 'tree-children';
-            childrenContainer.dataset.path = path;
-            parentElement.appendChild(childrenContainer);
-        }
-
-        // Clear existing children
-        childrenContainer.innerHTML = '';
-
-        // Sort items: directories first, then files, both alphabetically
-        const sortedItems = data.items.sort((a, b) => {
-            // Directories first
-            if (a.type === 'directory' && b.type === 'file') return -1;
-            if (a.type === 'file' && b.type === 'directory') return 1;
-            // Then alphabetically by name
-            return a.name.localeCompare(b.name);
-        });
-
-        // Render items
-        sortedItems.forEach(item => {
-            const itemElement = this.createTreeItem({
-                ...item,
-                path: this.joinPath(path, item.name)
-            });
-            childrenContainer.appendChild(itemElement);
-        });
-
-        // Update expand state
-        if (this.expandedDirs.has(path)) {
-            childrenContainer.classList.add('expanded');
-            const expandIcon = parentElement.querySelector('.tree-expand');
-            if (expandIcon) {
-                expandIcon.classList.add('expanded');
-                expandIcon.textContent = '▼';
-            }
-        } else {
-            childrenContainer.classList.remove('expanded');
-        }
-    }
 
     /**
      * Create tree item element
@@ -181,18 +132,7 @@ class FileTree {
         element.dataset.type = item.type;
         element.tabIndex = 0;
 
-        // Expand/collapse icon for directories
-        if (item.type === 'directory' && !item.isRoot) {
-            const expandIcon = document.createElement('span');
-            expandIcon.className = 'tree-expand';
-            expandIcon.textContent = '▶';
-            element.appendChild(expandIcon);
-        } else if (!item.isRoot) {
-            // Spacer for files
-            const spacer = document.createElement('span');
-            spacer.className = 'tree-expand';
-            element.appendChild(spacer);
-        }
+        // Remove expand/collapse arrows - keeping simple navigation only
 
         // File/directory icon
         const icon = document.createElement('span');
@@ -277,14 +217,7 @@ class FileTree {
         console.log('FileTree: Item type:', treeItem.dataset.type);
         console.log('FileTree: Item path:', treeItem.dataset.path);
 
-        // Check if clicking on expand icon (for expand/collapse)
-        const expandIcon = e.target.closest('.tree-expand');
-        if (expandIcon && treeItem.dataset.type === 'directory') {
-            console.log('FileTree: Expanding directory (expand icon clicked):', treeItem.dataset.path);
-            e.stopPropagation();
-            this.toggleDirectory(treeItem);
-            return;
-        }
+        // Remove expand/collapse functionality - keeping only navigation
 
         console.log('FileTree: Selecting item:', treeItem.dataset.path, treeItem.dataset.type);
         this.selectItem(treeItem);
@@ -351,20 +284,17 @@ class FileTree {
                 break;
             case 'ArrowLeft':
                 e.preventDefault();
-                if (focused.dataset.type === 'directory') {
-                    this.collapseDirectory(focused);
+                // Navigate to parent directory
+                if (this.currentPath !== '/') {
+                    const parentPath = this.currentPath.split('/').slice(0, -1).join('/') || '/';
+                    this.navigateToDirectory(parentPath);
                 }
                 break;
             case 'ArrowRight':
-                e.preventDefault();
-                if (focused.dataset.type === 'directory') {
-                    this.expandDirectory(focused);
-                }
-                break;
             case 'Enter':
                 e.preventDefault();
                 if (focused.dataset.type === 'directory') {
-                    this.toggleDirectory(focused);
+                    this.navigateToDirectory(focused.dataset.path);
                 } else {
                     this.openFile(focused.dataset.path);
                 }
@@ -461,80 +391,6 @@ class FileTree {
         });
     }
 
-    /**
-     * Toggle directory expansion
-     */
-    async toggleDirectory(item) {
-        const path = item.dataset.path;
-        
-        if (this.expandedDirs.has(path)) {
-            this.collapseDirectory(item);
-        } else {
-            await this.expandDirectory(item);
-        }
-    }
-
-    /**
-     * Expand directory
-     */
-    async expandDirectory(item) {
-        const path = item.dataset.path;
-        
-        if (this.expandedDirs.has(path)) return;
-
-        // Show loading state
-        item.classList.add('loading');
-        
-        try {
-            // Load directory if not cached
-            if (!this.cache.has(path)) {
-                await this.loadDirectory(path, item);
-            } else {
-                this.renderChildren(this.cache.get(path), item);
-            }
-
-            // Update state
-            this.expandedDirs.add(path);
-            const childrenContainer = item.querySelector('.tree-children');
-            if (childrenContainer) {
-                childrenContainer.classList.add('expanded');
-            }
-
-            const expandIcon = item.querySelector('.tree-expand');
-            if (expandIcon) {
-                expandIcon.classList.add('expanded');
-                expandIcon.textContent = '▼';
-            }
-
-        } catch (error) {
-            console.error('Failed to expand directory:', error);
-        } finally {
-            item.classList.remove('loading');
-        }
-    }
-
-    /**
-     * Collapse directory
-     */
-    collapseDirectory(item) {
-        const path = item.dataset.path;
-        
-        if (!this.expandedDirs.has(path)) return;
-
-        // Update state
-        this.expandedDirs.delete(path);
-        
-        const childrenContainer = item.querySelector('.tree-children');
-        if (childrenContainer) {
-            childrenContainer.classList.remove('expanded');
-        }
-
-        const expandIcon = item.querySelector('.tree-expand');
-        if (expandIcon) {
-            expandIcon.classList.remove('expanded');
-            expandIcon.textContent = '▶';
-        }
-    }
 
     /**
      * Open file
@@ -599,20 +455,16 @@ class FileTree {
      * Navigate to specific path
      */
     async navigateToPath(targetPath) {
+        // For navigation-only mode, just navigate to the directory containing the target
         const pathParts = targetPath.split('/').filter(part => part);
-        let currentPath = '/';
-
-        // Expand directories leading to target
-        for (let i = 0; i < pathParts.length - 1; i++) {
-            currentPath = this.joinPath(currentPath, pathParts[i]);
-            const item = this.container.querySelector(`[data-path="${currentPath}"]`);
-            
-            if (item && item.dataset.type === 'directory') {
-                await this.expandDirectory(item);
-            }
-        }
-
-        // Select target item
+        const directoryPath = pathParts.length > 1 
+            ? '/' + pathParts.slice(0, -1).join('/')
+            : '/';
+        
+        // Navigate to the directory
+        await this.navigateToDirectory(directoryPath);
+        
+        // Select target item if it exists
         const targetItem = this.container.querySelector(`[data-path="${targetPath}"]`);
         if (targetItem) {
             this.selectItem(targetItem);

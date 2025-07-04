@@ -52,36 +52,7 @@
     white-space: nowrap;
 }
 
-.tree-expand {
-    width: 16px;
-    height: 16px;
-    margin-right: var(--spacing-xs);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    color: var(--text-secondary);
-    transition: transform var(--transition-fast);
-    flex-shrink: 0;
-}
-
-.tree-expand.expanded {
-    transform: rotate(90deg);
-}
-
-.tree-children {
-    margin-left: var(--spacing-md);
-    overflow: hidden;
-    transition: max-height var(--transition-base);
-}
-
-.tree-children.collapsed {
-    max-height: 0;
-}
-
-.tree-children.expanded {
-    max-height: 2000px;
-}
+/* Remove tree-expand and tree-children styles - using navigation-only approach */
 
 /* Content Display */
 .content-markdown {
