@@ -77,8 +77,11 @@ class ApiClient {
      * Get directory listing
      */
     async getFiles(path = '/', options = {}) {
+        // Normalize path - remove leading slash for backend (except root)
+        const normalizedPath = path === '/' ? '' : (path.startsWith('/') ? path.substring(1) : path);
+        
         const params = new URLSearchParams({
-            path,
+            path: normalizedPath,
             include_hidden: options.includeHidden || false,
             sort_by: options.sortBy || 'name',
             sort_order: options.sortOrder || 'asc'
@@ -95,8 +98,11 @@ class ApiClient {
      * Get file content
      */
     async getFileContent(path, options = {}) {
+        // Normalize path - remove leading slash for backend
+        const normalizedPath = path.startsWith('/') ? path.substring(1) : path;
+        
         const params = new URLSearchParams({
-            path,
+            path: normalizedPath,
             page: options.page || 1,
             lines_per_page: options.linesPerPage || 1000,
             encoding: options.encoding || 'utf-8'
@@ -113,8 +119,11 @@ class ApiClient {
      * Get file metadata
      */
     async getFileInfo(path) {
-        const params = new URLSearchParams({ path });
-        const cacheKey = `info:${path}`;
+        // Normalize path - remove leading slash for backend
+        const normalizedPath = path.startsWith('/') ? path.substring(1) : path;
+        
+        const params = new URLSearchParams({ path: normalizedPath });
+        const cacheKey = `info:${normalizedPath}`;
         
         return this.getCached(cacheKey, async () => {
             return this.request(`/file_info?${params}`);
