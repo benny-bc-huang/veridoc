@@ -69,11 +69,22 @@
 
 .content-code .code-content .code-line {
     line-height: 1.4 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    gap: 0 !important;
 }
 
 .content-code .code-content {
     font-family: 'Consolas', 'Liberation Mono', 'Menlo', monospace !important;
     text-align: left !important;
+    margin: 0 !important;
+    padding: var(--spacing-md) !important;
+}
+
+.content-code pre.code-content {
+    margin: 0 !important;
+    padding: var(--spacing-md) !important;
 }
 
 /* Content Display */
@@ -244,8 +255,9 @@
     overflow: auto;
     font-family: 'Consolas', 'Liberation Mono', 'Menlo', 'Courier', monospace;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.4;
     background: var(--bg-primary);
+    margin: 0 !important;
 }
 
 .code-line {
@@ -253,6 +265,9 @@
     min-height: 20px;
     line-height: 1.4;
     align-items: flex-start;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
 }
 
 .line-number {
