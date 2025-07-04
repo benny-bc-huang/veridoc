@@ -7,7 +7,7 @@ AI-Optimized Documentation Browser
 import os
 import sys
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 import uvicorn
@@ -15,6 +15,13 @@ from typing import Optional, List
 import json
 import mimetypes
 from datetime import datetime
+import asyncio
+import subprocess
+import pty
+import select
+import termios
+import struct
+import fcntl
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent))
@@ -22,6 +29,7 @@ sys.path.append(str(Path(__file__).parent))
 from core.security import SecurityManager
 from core.file_handler import FileHandler
 from core.config import Config
+from core.git_integration import GitIntegration
 from models.api_models import (
     FileListResponse, FileItem, FileContentResponse, 
     FileMetadata, HealthResponse, ErrorResponse
@@ -38,6 +46,7 @@ app = FastAPI(
 # Initialize core components
 security_manager = SecurityManager(config.base_path)
 file_handler = FileHandler(security_manager)
+git_integration = GitIntegration(config.base_path)
 
 # Serve static files
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
@@ -251,6 +260,168 @@ async def search_files(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/git/info")
+async def get_git_info():
+    """Get Git repository information"""
+    try:
+        repo_info = await git_integration.get_repository_info()
+        return repo_info
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/git/status/{file_path:path}")
+async def get_file_git_status(file_path: str):
+    """Get Git status for a specific file"""
+    try:
+        safe_path = security_manager.validate_path(file_path)
+        status = await git_integration.get_file_status(safe_path)
+        return status
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/git/history/{file_path:path}")
+async def get_file_git_history(file_path: str, limit: int = 10):
+    """Get Git commit history for a specific file"""
+    try:
+        safe_path = security_manager.validate_path(file_path)
+        history = await git_integration.get_file_history(safe_path, limit)
+        return {"history": history}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/git/diff/{file_path:path}")
+async def get_file_git_diff(file_path: str, commit: Optional[str] = None):
+    """Get Git diff for a specific file"""
+    try:
+        safe_path = security_manager.validate_path(file_path)
+        diff = await git_integration.get_file_diff(safe_path, commit)
+        return {"diff": diff}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/git/changes")
+async def get_git_changes():
+    """Get list of changed files in repository"""
+    try:
+        changes = await git_integration.get_changed_files()
+        return {"changes": changes}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Terminal WebSocket connection manager
+class TerminalManager:
+    def __init__(self):
+        self.active_connections = {}
+        self.processes = {}
+    
+    async def connect(self, websocket: WebSocket, terminal_id: str):
+        await websocket.accept()
+        self.active_connections[terminal_id] = websocket
+        
+        # Start a new shell process
+        master, slave = pty.openpty()
+        proc = subprocess.Popen(
+            ['/bin/bash'],
+            stdin=slave,
+            stdout=slave,
+            stderr=slave,
+            preexec_fn=os.setsid,
+            cwd=str(config.base_path)
+        )
+        
+        os.close(slave)
+        self.processes[terminal_id] = {'master': master, 'proc': proc}
+        
+        # Start reading from terminal
+        asyncio.create_task(self.read_terminal(terminal_id))
+    
+    async def disconnect(self, terminal_id: str):
+        if terminal_id in self.active_connections:
+            del self.active_connections[terminal_id]
+        
+        if terminal_id in self.processes:
+            proc_info = self.processes[terminal_id]
+            try:
+                os.close(proc_info['master'])
+                proc_info['proc'].terminate()
+                proc_info['proc'].wait(timeout=1)
+            except:
+                try:
+                    proc_info['proc'].kill()
+                except:
+                    pass
+            del self.processes[terminal_id]
+    
+    async def send_to_terminal(self, terminal_id: str, data: str):
+        if terminal_id in self.processes:
+            master = self.processes[terminal_id]['master']
+            try:
+                os.write(master, data.encode('utf-8'))
+            except:
+                await self.disconnect(terminal_id)
+    
+    async def read_terminal(self, terminal_id: str):
+        if terminal_id not in self.processes:
+            return
+        
+        master = self.processes[terminal_id]['master']
+        websocket = self.active_connections.get(terminal_id)
+        
+        try:
+            while terminal_id in self.processes and terminal_id in self.active_connections:
+                # Check if there's data to read
+                ready, _, _ = select.select([master], [], [], 0.1)
+                if ready:
+                    try:
+                        data = os.read(master, 1024)
+                        if data:
+                            await websocket.send_text(data.decode('utf-8', errors='ignore'))
+                        else:
+                            break
+                    except OSError:
+                        break
+                await asyncio.sleep(0.01)
+        except:
+            pass
+        finally:
+            await self.disconnect(terminal_id)
+
+terminal_manager = TerminalManager()
+
+@app.websocket("/ws/terminal/{terminal_id}")
+async def websocket_terminal(websocket: WebSocket, terminal_id: str):
+    """WebSocket endpoint for terminal communication"""
+    await terminal_manager.connect(websocket, terminal_id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            
+            # Handle terminal resize
+            if data.startswith('{"type":"resize"'):
+                try:
+                    msg = json.loads(data)
+                    if terminal_id in terminal_manager.processes:
+                        master = terminal_manager.processes[terminal_id]['master']
+                        # Set terminal size
+                        fcntl.ioctl(master, termios.TIOCSWINSZ, 
+                                   struct.pack('HHHH', msg['rows'], msg['cols'], 0, 0))
+                except:
+                    pass
+            else:
+                # Regular input
+                await terminal_manager.send_to_terminal(terminal_id, data)
+    except WebSocketDisconnect:
+        await terminal_manager.disconnect(terminal_id)
+    except Exception as e:
+        print(f"Terminal WebSocket error: {e}")
+        await terminal_manager.disconnect(terminal_id)
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     """Global exception handler"""
@@ -279,6 +450,7 @@ if __name__ == "__main__":
         config.base_path = Path(args.base_path).resolve()
         security_manager = SecurityManager(config.base_path)
         file_handler = FileHandler(security_manager)
+        git_integration = GitIntegration(config.base_path)
     
     print(f"🚀 VeriDoc server starting on http://{args.host}:{args.port}")
     print(f"📁 Base path: {config.base_path}")

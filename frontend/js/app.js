@@ -450,31 +450,36 @@ class VeriDocApp {
     }
 
     /**
-     * Initialize terminal placeholder (Phase 3 feature)
+     * Initialize terminal (Phase 3 feature)
      */
     initializeTerminalPlaceholder() {
         const container = document.getElementById('terminal-container');
-        if (!container || container.hasChildNodes()) return;
+        if (!container) return;
         
-        container.innerHTML = `
-            <div style="padding: var(--spacing-lg); text-align: center; color: var(--text-secondary);">
-                <div style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-md);">
-                    🚧 Terminal Integration
-                </div>
-                <div style="margin-bottom: var(--spacing-md);">
-                    <strong>Coming in Phase 3!</strong>
-                </div>
-                <div style="font-size: var(--font-size-sm); line-height: 1.6;">
-                    Integrated terminal with xterm.js<br>
-                    WebSocket connection for commands<br>
-                    Copy/paste support<br>
-                    Command logging
-                </div>
-                <div style="margin-top: var(--spacing-lg); font-size: var(--font-size-xs); opacity: 0.7;">
-                    Currently in Phase 1: Core Documentation MVP
-                </div>
-            </div>
-        `;
+        // Initialize terminal if not already done
+        if (!this.components.terminal) {
+            try {
+                this.components.terminal = new TerminalComponent();
+                this.components.terminal.mount(container);
+                console.log('Terminal component initialized');
+            } catch (error) {
+                console.error('Failed to initialize terminal:', error);
+                // Fallback to placeholder
+                container.innerHTML = `
+                    <div style="padding: var(--spacing-lg); text-align: center; color: var(--text-secondary);">
+                        <div style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-md);">
+                            ⚠️ Terminal Error
+                        </div>
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <strong>Failed to initialize terminal</strong>
+                        </div>
+                        <div style="font-size: var(--font-size-sm); line-height: 1.6;">
+                            ${error.message || 'Unknown error'}
+                        </div>
+                    </div>
+                `;
+            }
+        }
     }
 
     /**

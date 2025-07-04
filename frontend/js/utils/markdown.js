@@ -7,14 +7,14 @@ class MarkdownRenderer {
     constructor() {
         this.markedOptions = {
             highlight: (code, lang) => {
-                if (window.Prism && lang && Prism.languages[lang]) {
-                    return Prism.highlight(code, Prism.languages[lang], lang);
-                }
-                return code;
+                return this.highlightCode(code, lang);
             },
             breaks: true,
             gfm: true
         };
+        
+        // Initialize syntax highlighting support
+        this.initializeSyntaxHighlighting();
 
         // Configure marked
         if (window.marked) {
@@ -310,6 +310,152 @@ class MarkdownRenderer {
 
         container.innerHTML = '';
         container.appendChild(list);
+    }
+
+    /**
+     * Initialize syntax highlighting support
+     */
+    initializeSyntaxHighlighting() {
+        // Define language mappings and extensions
+        this.languageMap = {
+            'js': 'javascript',
+            'jsx': 'javascript',
+            'ts': 'typescript',
+            'tsx': 'typescript',
+            'py': 'python',
+            'rb': 'ruby',
+            'sh': 'bash',
+            'yaml': 'yaml',
+            'yml': 'yaml',
+            'json': 'json',
+            'xml': 'xml',
+            'html': 'html',
+            'css': 'css',
+            'scss': 'scss',
+            'sass': 'sass',
+            'php': 'php',
+            'java': 'java',
+            'c': 'c',
+            'cpp': 'cpp',
+            'cxx': 'cpp',
+            'cc': 'cpp',
+            'h': 'c',
+            'hpp': 'cpp',
+            'cs': 'csharp',
+            'go': 'go',
+            'rs': 'rust',
+            'kt': 'kotlin',
+            'swift': 'swift',
+            'dart': 'dart',
+            'r': 'r',
+            'sql': 'sql',
+            'md': 'markdown',
+            'dockerfile': 'docker',
+            'vim': 'vim',
+            'lua': 'lua',
+            'perl': 'perl',
+            'powershell': 'powershell',
+            'ps1': 'powershell'
+        };
+        
+        // Top 10 languages for Phase 3
+        this.topLanguages = [
+            'javascript', 'python', 'java', 'typescript', 'c', 'cpp', 
+            'csharp', 'php', 'ruby', 'go'
+        ];
+    }
+
+    /**
+     * Enhanced code highlighting
+     */
+    highlightCode(code, lang) {
+        if (!code) return '';
+        
+        // Normalize language
+        const normalizedLang = this.normalizeLanguage(lang);
+        
+        // Use Prism.js if available
+        if (window.Prism && normalizedLang && Prism.languages[normalizedLang]) {
+            try {
+                return Prism.highlight(code, Prism.languages[normalizedLang], normalizedLang);
+            } catch (error) {
+                console.warn('Prism highlighting failed:', error);
+            }
+        }
+        
+        // Fallback to basic highlighting
+        return this.basicHighlight(code, normalizedLang);
+    }
+    
+    /**
+     * Normalize language name
+     */
+    normalizeLanguage(lang) {
+        if (!lang) return null;
+        
+        const normalized = lang.toLowerCase();
+        return this.languageMap[normalized] || normalized;
+    }
+    
+    /**
+     * Basic syntax highlighting fallback
+     */
+    basicHighlight(code, lang) {
+        if (!lang) return this.escapeHtml(code);
+        
+        let highlighted = this.escapeHtml(code);
+        
+        // Basic patterns for common languages
+        const patterns = {
+            javascript: [
+                { pattern: /\b(function|const|let|var|return|if|else|for|while|class|extends|import|export|from|async|await|try|catch|throw|new|this|super)\b/g, className: 'keyword' },
+                { pattern: /\b(true|false|null|undefined)\b/g, className: 'boolean' },
+                { pattern: /\b\d+(\.\d+)?\b/g, className: 'number' },
+                { pattern: /(["'])((?:\\.|(?!\1)[^\\])*?)\1/g, className: 'string' },
+                { pattern: /\/\/.*$/gm, className: 'comment' },
+                { pattern: /\/\*[\s\S]*?\*\//g, className: 'comment' }
+            ],
+            python: [
+                { pattern: /\b(def|class|if|elif|else|for|while|try|except|finally|import|from|return|yield|lambda|with|as|pass|break|continue|and|or|not|is|in|True|False|None)\b/g, className: 'keyword' },
+                { pattern: /\b(True|False|None)\b/g, className: 'boolean' },
+                { pattern: /\b\d+(\.\d+)?\b/g, className: 'number' },
+                { pattern: /(["'])((?:\\.|(?!\1)[^\\])*?)\1/g, className: 'string' },
+                { pattern: /#.*$/gm, className: 'comment' }
+            ],
+            java: [
+                { pattern: /\b(public|private|protected|static|final|abstract|class|interface|extends|implements|import|package|return|if|else|for|while|try|catch|throw|new|this|super|void|int|String|boolean|double|float|long|char)\b/g, className: 'keyword' },
+                { pattern: /\b(true|false|null)\b/g, className: 'boolean' },
+                { pattern: /\b\d+(\.\d+)?[fFdD]?\b/g, className: 'number' },
+                { pattern: /(["'])((?:\\.|(?!\1)[^\\])*?)\1/g, className: 'string' },
+                { pattern: /\/\/.*$/gm, className: 'comment' },
+                { pattern: /\/\*[\s\S]*?\*\//g, className: 'comment' }
+            ],
+            css: [
+                { pattern: /[.#][\w-]+/g, className: 'selector' },
+                { pattern: /\b(color|background|font|margin|padding|border|width|height|display|position|float|clear|overflow|z-index|opacity|transform|transition|animation)\b/g, className: 'property' },
+                { pattern: /(["'])((?:\\.|(?!\1)[^\\])*?)\1/g, className: 'string' },
+                { pattern: /\/\*[\s\S]*?\*\//g, className: 'comment' }
+            ],
+            html: [
+                { pattern: /<\/?[\w-]+(?:\s+[\w-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*\s*\/?>/g, className: 'tag' },
+                { pattern: /<!--[\s\S]*?-->/g, className: 'comment' }
+            ],
+            json: [
+                { pattern: /"[\w\s-]+"\s*:/g, className: 'property' },
+                { pattern: /\b(true|false|null)\b/g, className: 'boolean' },
+                { pattern: /\b\d+(\.\d+)?\b/g, className: 'number' },
+                { pattern: /(["'])((?:\\.|(?!\1)[^\\])*?)\1/g, className: 'string' }
+            ]
+        };
+        
+        const langPatterns = patterns[lang];
+        if (langPatterns) {
+            langPatterns.forEach(({ pattern, className }) => {
+                highlighted = highlighted.replace(pattern, `<span class="token ${className}">$&</span>`);
+            });
+        }
+        
+        return highlighted;
     }
 
     /**

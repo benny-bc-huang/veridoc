@@ -24,7 +24,20 @@ class FileHandler:
         self.markdown_extensions = {".md", ".markdown", ".mdown", ".mkd"}
         self.diagram_extensions = {".mmd", ".mermaid"}
         self.text_extensions = {".txt", ".text"}
-        self.code_extensions = {".py", ".js", ".html", ".css", ".json", ".yaml", ".yml", ".xml", ".sh", ".bash"}
+        self.code_extensions = {
+            # Top 10 languages (Phase 3 priority)
+            ".py", ".js", ".java", ".ts", ".c", ".cpp", ".cs", ".php", ".rb", ".go",
+            # Additional common languages
+            ".jsx", ".tsx", ".h", ".hpp", ".cc", ".cxx", ".kt", ".swift", ".rs", ".dart",
+            # Web technologies
+            ".html", ".css", ".scss", ".sass", ".vue", ".svelte",
+            # Data/config files
+            ".json", ".yaml", ".yml", ".xml", ".toml", ".ini", ".cfg", ".conf",
+            # Shell and scripting
+            ".sh", ".bash", ".zsh", ".fish", ".ps1", ".bat", ".cmd",
+            # Other
+            ".sql", ".r", ".lua", ".perl", ".vim", ".dockerfile"
+        }
         self.image_extensions = {".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"}
     
     async def list_directory(
