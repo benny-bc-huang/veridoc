@@ -54,6 +54,28 @@
 
 /* Remove tree-expand and tree-children styles - using navigation-only approach */
 
+/* Force proper code formatting - highest specificity */
+.content-code .code-content .code-line .line-content {
+    white-space: pre !important;
+    text-align: left !important;
+    word-break: normal !important;
+    word-wrap: normal !important;
+    overflow-wrap: normal !important;
+    text-justify: none !important;
+    font-family: 'Consolas', 'Liberation Mono', 'Menlo', monospace !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+}
+
+.content-code .code-content .code-line {
+    line-height: 1.4 !important;
+}
+
+.content-code .code-content {
+    font-family: 'Consolas', 'Liberation Mono', 'Menlo', monospace !important;
+    text-align: left !important;
+}
+
 /* Content Display */
 .content-markdown {
     width: 100%;

@@ -233,17 +233,37 @@ class ContentViewer {
                 <span class="code-language">${language || 'Text'}</span>
                 <span class="code-lines">${lines.length} lines</span>
             </div>
-            <div class="code-content">
+            <pre class="code-content">
                 ${lines.map((line, index) => `
                     <div class="code-line" id="line-${index + 1}">
                         <span class="line-number">${index + 1}</span>
-                        <span class="line-content">${this.highlightCodeLine(line, language)}</span>
+                        <code class="line-content">${this.highlightCodeLine(line, language)}</code>
                     </div>
                 `).join('')}
-            </div>
+            </pre>
         `;
 
         display.innerHTML = codeHTML;
+        
+        console.log('DEBUG: Generated HTML sample:', codeHTML.substring(0, 500));
+        console.log('DEBUG: Display element classes:', display.className);
+        
+        // Wait for DOM to update, then check styles
+        setTimeout(() => {
+            const firstLineContent = display.querySelector('.line-content');
+            if (firstLineContent) {
+                console.log('DEBUG: First line element:', firstLineContent.outerHTML.substring(0, 200));
+                const computedStyle = window.getComputedStyle(firstLineContent);
+                console.log('DEBUG: Computed styles:', {
+                    whiteSpace: computedStyle.whiteSpace,
+                    textAlign: computedStyle.textAlign,
+                    wordBreak: computedStyle.wordBreak,
+                    fontFamily: computedStyle.fontFamily,
+                    lineHeight: computedStyle.lineHeight,
+                    fontSize: computedStyle.fontSize
+                });
+            }
+        }, 100);
 
         // Hide TOC button for code files
         const tocBtn = document.getElementById('toggle-toc-btn');
