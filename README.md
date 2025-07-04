@@ -25,20 +25,16 @@ VeriDoc provides **zero-context-switch documentation access** optimized for AI d
 ## Quick Start
 
 ```bash
-# Install VeriDoc
-pip install veridoc
+# Current Development Setup (Phase 2 Complete)
+python3 app.py                # Start server at localhost:5000
+# Opens VeriDoc at http://localhost:5000
 
-# Open documentation browser
-veridoc docs/
-
-# Open specific file
-veridoc docs/api.md
-
-# Open file at specific line
-veridoc docs/api.md 42
-
-# Search documentation
-veridoc --search "authentication"
+# Future CLI Integration (Phase 3)
+pip install veridoc           # Future installation
+veridoc docs/                 # Open documentation browser
+veridoc docs/api.md           # Open specific file
+veridoc docs/api.md 42        # Open file at specific line
+veridoc --search "auth"       # Search documentation
 ```
 
 ## Core Features
