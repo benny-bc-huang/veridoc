@@ -648,6 +648,7 @@ class ContentViewer {
             tocContent.innerHTML = '<p class="text-muted">Table of contents not available</p>';
         }
 
+        tocPanel.style.display = 'flex';
         tocPanel.classList.add('open');
     }
 
@@ -658,6 +659,12 @@ class ContentViewer {
         const tocPanel = document.getElementById('toc-panel');
         if (tocPanel) {
             tocPanel.classList.remove('open');
+            // Hide after animation completes
+            setTimeout(() => {
+                if (!tocPanel.classList.contains('open')) {
+                    tocPanel.style.display = 'none';
+                }
+            }, 300); // Match CSS transition duration
         }
     }
 
