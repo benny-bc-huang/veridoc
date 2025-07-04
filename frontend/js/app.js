@@ -239,6 +239,11 @@ class VeriDocApp {
             this.handleUrlSearch(params);
         });
 
+        // Files panel collapse/expand
+        document.getElementById('toggle-files-panel')?.addEventListener('click', () => {
+            this.toggleFilesPanel();
+        });
+
         // Settings and help buttons
         document.getElementById('settings-btn')?.addEventListener('click', () => {
             this.showSettings();
@@ -418,10 +423,7 @@ class VeriDocApp {
      * Toggle file tree visibility
      */
     toggleFileTree() {
-        const fileTreePanel = document.getElementById('file-tree-panel');
-        if (fileTreePanel) {
-            fileTreePanel.classList.toggle('hidden');
-        }
+        this.toggleFilesPanel();
     }
 
     /**
@@ -473,6 +475,30 @@ class VeriDocApp {
                 </div>
             </div>
         `;
+    }
+
+    /**
+     * Toggle files panel collapse/expand
+     */
+    toggleFilesPanel() {
+        const panel = document.getElementById('file-tree-panel');
+        const toggleBtn = document.getElementById('toggle-files-panel');
+        
+        if (!panel || !toggleBtn) return;
+        
+        const isCollapsed = panel.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // Expand panel
+            panel.classList.remove('collapsed');
+            toggleBtn.textContent = '◀';
+            toggleBtn.title = 'Collapse panel';
+        } else {
+            // Collapse panel
+            panel.classList.add('collapsed');
+            toggleBtn.textContent = '▶';
+            toggleBtn.title = 'Expand panel';
+        }
     }
 
     /**

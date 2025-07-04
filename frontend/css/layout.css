@@ -106,6 +106,38 @@
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
+    transition: width var(--transition-base), min-width var(--transition-base);
+}
+
+.file-tree-panel.collapsed {
+    width: 40px; /* Keep small width for the toggle button */
+    min-width: 40px;
+    overflow: visible;
+    border-right: 1px solid var(--border);
+}
+
+.file-tree-panel.collapsed .file-tree-container {
+    display: none;
+}
+
+.file-tree-panel.collapsed .panel-title {
+    display: none;
+}
+
+.file-tree-panel.collapsed .panel-header {
+    justify-content: center;
+}
+
+.file-tree-panel.collapsed .panel-controls {
+    justify-content: center;
+}
+
+.file-tree-panel.collapsed #refresh-btn {
+    display: none;
+}
+
+.file-tree-panel.collapsed + .resize-handle {
+    display: none;
 }
 
 /* Content panel */
