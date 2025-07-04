@@ -57,6 +57,19 @@ class ContentViewer {
             tocClose.addEventListener('click', () => this.hideTableOfContents());
         }
 
+        // Close ToC when clicking outside
+        document.addEventListener('click', (e) => {
+            const tocPanel = document.getElementById('toc-panel');
+            const toggleTocBtn = document.getElementById('toggle-toc-btn');
+            
+            if (tocPanel && tocPanel.classList.contains('open')) {
+                // If click is not on the ToC panel or the toggle button
+                if (!tocPanel.contains(e.target) && e.target !== toggleTocBtn) {
+                    this.hideTableOfContents();
+                }
+            }
+        });
+
         // Find dialog events
         this.bindFindEvents();
 

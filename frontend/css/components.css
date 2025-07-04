@@ -318,10 +318,10 @@
 /* Table of Contents */
 .toc-panel {
     position: absolute;
-    top: 0;
+    top: 36px; /* Start below the panel header */
     right: 0;
     width: 250px;
-    height: 100%;
+    height: calc(100% - 36px); /* Subtract header height */
     background: var(--bg-secondary);
     border-left: 1px solid var(--border);
     z-index: 50;
