@@ -79,7 +79,7 @@
     font-family: 'Consolas', 'Liberation Mono', 'Menlo', monospace !important;
     text-align: left !important;
     margin: 0 !important;
-    padding: var(--spacing-sm) var(--spacing-md) !important;
+    padding: 0 !important;
 }
 
 .content-code pre.code-content {
@@ -92,7 +92,7 @@
     width: 100%;
     border-collapse: collapse !important;
     border-spacing: 0 !important;
-    margin: 0 !important;
+    margin: var(--spacing-xs) var(--spacing-md) !important;
     padding: 0 !important;
     font-family: 'Consolas', 'Liberation Mono', 'Menlo', monospace !important;
     font-size: 14px !important;
@@ -300,6 +300,7 @@
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
     padding: var(--spacing-sm) var(--spacing-md);
+    margin: 0;
     font-size: var(--font-size-xs);
     color: var(--text-secondary);
     display: flex;
@@ -308,7 +309,7 @@
 }
 
 .code-content {
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: 0;
     overflow: auto;
     font-family: 'Consolas', 'Liberation Mono', 'Menlo', 'Courier', monospace;
     font-size: 14px;
