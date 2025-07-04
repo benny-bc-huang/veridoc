@@ -51,6 +51,12 @@ class ContentViewer {
             toggleTocBtn.addEventListener('click', () => this.toggleTableOfContents());
         }
 
+        // ToC close button
+        const tocClose = document.getElementById('toc-close');
+        if (tocClose) {
+            tocClose.addEventListener('click', () => this.hideTableOfContents());
+        }
+
         // Find dialog events
         this.bindFindEvents();
 
