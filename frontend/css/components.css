@@ -87,6 +87,63 @@
     padding: var(--spacing-md) !important;
 }
 
+/* Table-based code layout */
+.code-table {
+    width: 100%;
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: 'Consolas', 'Liberation Mono', 'Menlo', monospace !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+}
+
+.code-table .code-line {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    line-height: 1.4 !important;
+}
+
+.code-table .line-number {
+    color: var(--text-secondary);
+    text-align: right;
+    user-select: none;
+    width: 50px;
+    padding: 0 var(--spacing-sm) 0 0 !important;
+    margin: 0 !important;
+    border-right: 1px solid var(--border);
+    font-family: 'Consolas', 'Liberation Mono', 'Menlo', monospace !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    vertical-align: top;
+}
+
+.code-table .line-content {
+    padding: 0 0 0 var(--spacing-sm) !important;
+    margin: 0 !important;
+    white-space: pre !important;
+    text-align: left !important;
+    word-break: normal !important;
+    word-wrap: normal !important;
+    overflow-wrap: normal !important;
+    text-justify: none !important;
+    vertical-align: top;
+}
+
+.code-table .line-content code {
+    background: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+    white-space: pre !important;
+    text-align: left !important;
+}
+
 /* Content Display */
 .content-markdown {
     width: 100%;

@@ -233,14 +233,16 @@ class ContentViewer {
                 <span class="code-language">${language || 'Text'}</span>
                 <span class="code-lines">${lines.length} lines</span>
             </div>
-            <pre class="code-content">
-                ${lines.map((line, index) => `
-                    <div class="code-line" id="line-${index + 1}">
-                        <span class="line-number">${index + 1}</span>
-                        <code class="line-content">${this.highlightCodeLine(line, language)}</code>
-                    </div>
-                `).join('')}
-            </pre>
+            <div class="code-content">
+                <table class="code-table">
+                    ${lines.map((line, index) => `
+                        <tr class="code-line" id="line-${index + 1}">
+                            <td class="line-number">${index + 1}</td>
+                            <td class="line-content"><code>${this.highlightCodeLine(line, language)}</code></td>
+                        </tr>
+                    `).join('')}
+                </table>
+            </div>
         `;
 
         display.innerHTML = codeHTML;
