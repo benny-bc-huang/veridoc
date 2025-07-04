@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VeriDoc Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .loading { color: orange; }
+        #file-list { list-style: none; padding: 0; }
+        #file-list li { padding: 5px; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <h1>VeriDoc API Test</h1>
+    
+    <div class="test-section">
+        <h2>1. API Health Check</h2>
+        <div id="health-status" class="loading">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Files API</h2>
+        <div id="files-status" class="loading">Testing...</div>
+        <ul id="file-list"></ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Search API</h2>
+        <div id="search-status" class="loading">Testing...</div>
+        <div id="search-results"></div>
+    </div>
+
+    <script>
+        // Test API Health
+        async function testHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                document.getElementById('health-status').innerHTML = 
+                    `<span class="success">✅ Health check passed</span><br>
+                     Status: ${data.status}<br>
+                     Version: ${data.version}<br>
+                     Base path: ${data.base_path}`;
+            } catch (error) {
+                document.getElementById('health-status').innerHTML = 
+                    `<span class="error">❌ Health check failed: ${error.message}</span>`;
+            }
+        }
+
+        // Test Files API
+        async function testFiles() {
+            try {
+                const response = await fetch('/api/files?path=/');
+                const data = await response.json();
+                document.getElementById('files-status').innerHTML = 
+                    `<span class="success">✅ Files API working</span><br>
+                     Found ${data.total_items} items in root directory`;
+                
+                const fileList = document.getElementById('file-list');
+                data.items.slice(0, 10).forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = `${item.type === 'directory' ? '📁' : '📄'} ${item.name}`;
+                    fileList.appendChild(li);
+                });
+                
+                if (data.items.length > 10) {
+                    const li = document.createElement('li');
+                    li.textContent = `... and ${data.items.length - 10} more items`;
+                    li.style.fontStyle = 'italic';
+                    fileList.appendChild(li);
+                }
+            } catch (error) {
+                document.getElementById('files-status').innerHTML = 
+                    `<span class="error">❌ Files API failed: ${error.message}</span>`;
+            }
+        }
+
+        // Test Search API
+        async function testSearch() {
+            try {
+                const response = await fetch('/api/search?q=VeriDoc&limit=5');
+                const data = await response.json();
+                document.getElementById('search-status').innerHTML = 
+                    `<span class="success">✅ Search API working</span><br>
+                     Found ${data.total_results} results for "VeriDoc"`;
+                
+                const searchResults = document.getElementById('search-results');
+                if (data.results.length > 0) {
+                    searchResults.innerHTML = '<h4>Sample Results:</h4>';
+                    data.results.forEach(result => {
+                        const div = document.createElement('div');
+                        div.innerHTML = `<strong>${result.path}</strong> (${result.match_type}, score: ${result.score})`;
+                        if (result.snippet) {
+                            div.innerHTML += `<br><em>${result.snippet}</em>`;
+                        }
+                        div.style.marginBottom = '10px';
+                        searchResults.appendChild(div);
+                    });
+                }
+            } catch (error) {
+                document.getElementById('search-status').innerHTML = 
+                    `<span class="error">❌ Search API failed: ${error.message}</span>`;
+            }
+        }
+
+        // Run all tests
+        async function runTests() {
+            await testHealth();
+            await testFiles();
+            await testSearch();
+        }
+
+        // Start tests when page loads
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>
