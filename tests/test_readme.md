@@ -62,7 +62,7 @@ graph TD
 
 ## Links
 
-- [Internal link](./API_SPEC.md)
+- [Internal link](../docs/specs/API_SPEC.md)
 - [External link](https://github.com/anthropics/claude-code)
 
 ---

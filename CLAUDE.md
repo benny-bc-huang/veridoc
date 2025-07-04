@@ -29,10 +29,16 @@ VeriDoc is a lightweight, open-source documentation browser designed for AI-assi
 
 ## Development Commands
 
-**Current Status**: Phase 2 complete with Python FastAPI backend
+**Current Status**: Phase 3 complete with CLI integration and terminal features
 
 ```bash
-# Development server
+# CLI Integration (Recommended)
+./veridoc                     # Launch VeriDoc from any directory
+./veridoc docs/               # Open specific directory
+./veridoc README.md           # Open specific file
+./veridoc --help              # Show CLI options
+
+# Development server (Alternative)
 python3 app.py                # Start server at localhost:5000
 git status                    # Check current state
 git log --oneline -10        # Recent commits
@@ -41,10 +47,7 @@ git log --oneline -10        # Recent commits
 curl http://localhost:5000/api/health
 curl http://localhost:5000/api/files
 curl "http://localhost:5000/api/search?q=VeriDoc&type=both&limit=5"
-
-# Future CLI integration (Phase 3)
-./veridoc docs/api-spec.md 42
-./veridoc docs/
+curl http://localhost:5000/api/git/status
 ```
 
 ## Performance Targets (All Met ✅)
@@ -67,7 +70,7 @@ curl "http://localhost:5000/api/search?q=VeriDoc&type=both&limit=5"
 
 1. **Phase 1**: ✅ Core documentation MVP with backend APIs and frontend layout
 2. **Phase 2**: ✅ Enhanced documentation features (pagination, navigation, search)
-3. **Phase 3**: CLI integration and basic code support
+3. **Phase 3**: ✅ CLI integration, terminal features, and enhanced code support
 4. **Phase 4**: Open source preparation and polish
 
 ## File Structure Priorities
@@ -85,6 +88,14 @@ curl "http://localhost:5000/api/search?q=VeriDoc&type=both&limit=5"
 - ✅ **Enhanced Markdown**: Mermaid diagrams, syntax highlighting, cross-references
 - ✅ **Panel management**: FILES panel collapse/expand functionality (Ctrl+B)
 - ✅ **Navigation improvements**: Simplified file tree (removed expand arrows)
+
+### Phase 3 Features Implemented
+- ✅ **CLI Integration**: Executable `veridoc` command with argument parsing
+- ✅ **Terminal Integration**: Full xterm.js terminal with WebSocket backend
+- ✅ **Enhanced Code Rendering**: Syntax highlighting for 30+ file types
+- ✅ **Git Integration**: Status, history, and diff operations
+- ✅ **Shell Completions**: Bash, Zsh, and Fish completion scripts
+- ✅ **Rendering Fixes**: Table-based code layout with proper formatting
 
 ### File Size Handling
 - Files > 1MB: Paginated at 1000 lines per page
@@ -148,4 +159,4 @@ git commit -m "docs(readme): update installation instructions"
 ### Repository Status
 - **GitHub Repository**: https://github.com/benny-bc-huang/veridoc (private)
 - **Current Branch**: main
-- **Phase Status**: Phase 1 MVP Complete ✅
+- **Phase Status**: Phase 3 Complete ✅ (CLI Integration & Terminal Features)

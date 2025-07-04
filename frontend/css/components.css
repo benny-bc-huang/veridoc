@@ -92,7 +92,7 @@
     width: 100%;
     border-collapse: collapse !important;
     border-spacing: 0 !important;
-    margin: var(--spacing-xs) var(--spacing-md) !important;
+    margin: 0 !important;
     padding: 0 !important;
     font-family: 'Consolas', 'Liberation Mono', 'Menlo', monospace !important;
     font-size: 14px !important;
@@ -309,13 +309,13 @@
 }
 
 .code-content {
-    padding: 0;
+    padding: 0 !important;
+    margin: 0 !important;
     overflow: auto;
     font-family: 'Consolas', 'Liberation Mono', 'Menlo', 'Courier', monospace;
     font-size: 14px;
     line-height: 1.4;
     background: var(--bg-primary);
-    margin: 0 !important;
 }
 
 .code-line {

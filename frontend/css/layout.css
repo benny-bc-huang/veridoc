@@ -213,7 +213,7 @@
 }
 
 .breadcrumb-separator {
-    color: var(--border);
+    color: var(--text-primary);
 }
 
 /* Content controls */

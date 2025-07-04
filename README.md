@@ -25,15 +25,19 @@ VeriDoc provides **zero-context-switch documentation access** optimized for AI d
 ## Quick Start
 
 ```bash
-# Current Development Setup (Phase 2 Complete)
+# CLI Integration (Phase 3 Complete)
+./veridoc                     # Launch VeriDoc from any directory
+./veridoc docs/               # Open specific directory
+./veridoc README.md           # Open specific file
+./veridoc README.md 42        # Open file at specific line
+./veridoc --help              # Show CLI options
+
+# Alternative Development Setup
 python3 app.py                # Start server at localhost:5000
 # Opens VeriDoc at http://localhost:5000
 
-# Future CLI Integration (Phase 3)
+# Future Package Installation
 pip install veridoc           # Future installation
-veridoc docs/                 # Open documentation browser
-veridoc docs/api.md           # Open specific file
-veridoc docs/api.md 42        # Open file at specific line
 veridoc --search "auth"       # Search documentation
 ```
 
@@ -46,17 +50,21 @@ veridoc --search "auth"       # Search documentation
 - **Interactive File Tree**: Directory navigation with independent scrolling
 - **Security**: Path validation and file access controls
 
-### 🚧 **Phase 2 Planned - Enhanced Features**
-- **Full-Text Search**: Across all documentation files
-- **Large File Support**: Pagination for files > 1MB
-- **Table of Contents**: Auto-generated for Markdown files
-- **Find-in-File**: Regex search within documents
+### ✅ **Phase 2 Complete - Enhanced Features**
+- **Full-Text Search**: Advanced search across all documentation files
+- **Large File Support**: Pagination for files > 1MB with 1000+ lines per page
+- **Table of Contents**: Auto-generated ToC for Markdown files
+- **Find-in-File**: Regex search within documents with keyboard navigation
+- **Enhanced Markdown**: Mermaid diagrams, syntax highlighting, cross-references
+- **Panel Management**: FILES panel collapse/expand functionality
 
-### 📋 **Phase 3 Planned - CLI Integration**
-- **Terminal Integration**: Built-in terminal functionality
-- **CLI Helper**: Direct file/line access from command line
-- **Syntax Highlighting**: Code file support
-- **Shell Integration**: Workflow optimization
+### ✅ **Phase 3 Complete - CLI Integration & Terminal Features**
+- **CLI Integration**: Executable `veridoc` command with argument parsing
+- **Terminal Integration**: Full xterm.js terminal with WebSocket backend
+- **Enhanced Code Rendering**: Syntax highlighting for 30+ file types
+- **Git Integration**: Status, history, and diff operations
+- **Shell Completions**: Bash, Zsh, and Fish completion scripts
+- **Rendering Fixes**: Table-based code layout with proper formatting
 
 ### 📋 **Phase 4 Planned - Open Source Polish**
 - **Performance Optimization**: < 100MB memory usage
@@ -138,25 +146,24 @@ python app.py
 # The application will display documentation from the current directory
 ```
 
-### Future CLI Usage (Phase 3 - Coming Soon)
+### CLI Usage (Phase 3 Complete)
 ```bash
 # Open current directory documentation
-veridoc
+./veridoc
 
 # Open specific file
-veridoc docs/api.md
+./veridoc docs/api.md
 
 # Open file at line 42
-veridoc docs/api.md 42
+./veridoc docs/api.md 42
 
 # Open directory
-veridoc docs/
+./veridoc docs/
 
-# Search documentation
-veridoc --search "authentication"
+# Show help and options
+./veridoc --help
 
-# Start server only (no browser)
-veridoc --server-only --port 5000
+# All integrated with browser auto-open and terminal features
 ```
 
 ### AI Development Integration
@@ -252,8 +259,8 @@ python app.py
 
 ### Development Status
 - **Phase 1**: ✅ Complete - Core documentation MVP with three-pane layout
-- **Phase 2**: 📋 Planned - Enhanced search and navigation features
-- **Phase 3**: 📋 Planned - CLI integration and terminal functionality
+- **Phase 2**: ✅ Complete - Enhanced search, navigation, and content features
+- **Phase 3**: ✅ Complete - CLI integration, terminal functionality, and code rendering
 - **Phase 4**: 📋 Planned - Open source preparation and polish
 
 ### Git Integration
@@ -338,11 +345,11 @@ GET /api/search?q=authentication
 WS /api/terminal
 ```
 
-See [API_SPEC.md](API_SPEC.md) for complete API documentation.
+See [API_SPEC.md](docs/specs/API_SPEC.md) for complete API documentation.
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](docs/development/CONTRIBUTING.md) for details.
 
 ### Development Setup
 1. Fork the repository
@@ -379,18 +386,21 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - [x] **BONUS**: Directory navigation system
 - [x] **BONUS**: Terminal panel UI (Phase 3 placeholder)
 
-### Phase 2: Enhanced Features 🚧 **NEXT**
-- [ ] Full-text search across documentation
-- [ ] Large file pagination (>1MB files)
-- [ ] Table of contents generation
-- [ ] Find-in-file functionality
-- [ ] Enhanced Markdown features
+### Phase 2: Enhanced Features ✅ **COMPLETED**
+- [x] Full-text search across documentation with advanced scoring
+- [x] Large file pagination (>1MB files) with 1000+ lines per page
+- [x] Table of contents generation for Markdown files
+- [x] Find-in-file functionality with regex support
+- [x] Enhanced Markdown features with Mermaid diagrams
+- [x] Panel collapse/expand functionality
 
-### Phase 3: CLI Integration 📋 **PLANNED**
-- [ ] Helper script implementation
-- [ ] Integrated terminal functionality
-- [ ] Syntax highlighting for code files
-- [ ] Terminal logging and commands
+### Phase 3: CLI Integration ✅ **COMPLETED**
+- [x] CLI helper script implementation (`./veridoc` command)
+- [x] Integrated terminal functionality with xterm.js
+- [x] Syntax highlighting for 30+ code file types
+- [x] Git integration for documentation tracking
+- [x] Shell completion scripts (Bash, Zsh, Fish)
+- [x] Enhanced code rendering with table-based layout
 
 ### Phase 4: Open Source Polish 📋 **PLANNED**
 - [ ] Performance optimization (<100MB memory)
@@ -412,11 +422,11 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Current Status
 
-**Development Version** - Phase 1 MVP Complete ✅
-- Working prototype with three-pane layout
-- Independent panel scrolling resolved
-- Directory navigation implemented
-- Terminal panel UI prepared (Phase 3 placeholder)
-- Ready for Phase 2 development
+**Development Version** - Phase 3 Complete ✅
+- Working prototype with CLI integration and terminal features
+- Enhanced code rendering with syntax highlighting
+- Full-text search and large file pagination
+- Git integration and shell completions
+- Ready for Phase 4 open source preparation
 
-**Note**: This is a development version with git integration. The project is not yet packaged for distribution.
+**Note**: This is a development version with full CLI integration. The project is ready for open source release preparation.

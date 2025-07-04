@@ -228,22 +228,13 @@ class ContentViewer {
         const language = this.getLanguageFromExtension(extension);
         const lines = content.split('\n');
 
-        const codeHTML = `
-            <div class="code-header">
+        const codeHTML = `<div class="code-header">
                 <span class="code-language">${language || 'Text'}</span>
                 <span class="code-lines">${lines.length} lines</span>
-            </div>
-            <div class="code-content">
-                <table class="code-table">
-                    ${lines.map((line, index) => `
-                        <tr class="code-line" id="line-${index + 1}">
+            </div><div class="code-content"><table class="code-table">${lines.map((line, index) => `<tr class="code-line" id="line-${index + 1}">
                             <td class="line-number">${index + 1}</td>
                             <td class="line-content"><code>${this.highlightCodeLine(line, language)}</code></td>
-                        </tr>
-                    `).join('')}
-                </table>
-            </div>
-        `;
+                        </tr>`).join('')}</table></div>`;
 
         display.innerHTML = codeHTML;
         
@@ -407,9 +398,10 @@ class ContentViewer {
         const parts = path.split('/').filter(part => part);
         let currentPath = '';
         
-        const breadcrumbHTML = ['📁 /'].concat(parts.map(part => {
+        const breadcrumbHTML = ['📁 <span class="breadcrumb-separator">/</span>'].concat(parts.map((part, index) => {
             currentPath += '/' + part;
-            return `<span class="breadcrumb-separator">/</span><span class="breadcrumb-item">${this.escapeHtml(part)}</span>`;
+            const separator = index === 0 ? '' : '<span class="breadcrumb-separator">/</span>';
+            return `${separator}<span class="breadcrumb-item">${this.escapeHtml(part)}</span>`;
         })).join('');
 
         breadcrumb.innerHTML = breadcrumbHTML;

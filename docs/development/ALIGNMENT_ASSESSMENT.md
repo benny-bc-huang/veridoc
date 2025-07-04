@@ -17,10 +17,10 @@ The created specifications demonstrate strong alignment with the project stateme
 - Scale performance independently of documentation volume
 
 **Specification Alignment:**
-- **API_SPEC.md**: Performance targets (< 200ms directory, < 500ms file loading)
+- **../specs/API_SPEC.md**: Performance targets (< 200ms directory, < 500ms file loading)
 - **ARCHITECTURE.md**: "Performance Independence" principle explicitly stated
-- **UI_SPEC.md**: "Zero Context-Switch" and "Sub-500ms interactions" emphasized
-- **CLI_SPEC.md**: "Zero-Context-Switch Design" and "Flow State Preservation"
+- **../specs/UI_SPEC.md**: "Zero Context-Switch" and "Sub-500ms interactions" emphasized
+- **../specs/CLI_SPEC.md**: "Zero-Context-Switch Design" and "Flow State Preservation"
 
 ### 2. Key Value Propositions ✅
 
@@ -34,22 +34,22 @@ The created specifications demonstrate strong alignment with the project stateme
 #### Documentation Scaling ✅
 - **Project Statement**: "Stays lightweight regardless of documentation volume"
 - **Specifications**:
-  - API_SPEC: Rate limiting and pagination for large datasets
+  - ../specs/API_SPEC: Rate limiting and pagination for large datasets
   - ARCHITECTURE: "Performance Independence" principle
-  - UI_SPEC: Virtual scrolling and lazy loading for scalability
+  - ../specs/UI_SPEC: Virtual scrolling and lazy loading for scalability
 
 #### Superior Markdown & Mermaid Rendering ✅
 - **Project Statement**: "High-quality rendering of technical documentation with interactive diagrams"
 - **Specifications**:
-  - API_SPEC: Content rendering priorities for .md and .mmd files
-  - UI_SPEC: Detailed Markdown and Mermaid rendering specifications
+  - ../specs/API_SPEC: Content rendering priorities for .md and .mmd files
+  - ../specs/UI_SPEC: Detailed Markdown and Mermaid rendering specifications
   - ARCHITECTURE: Marked.js and Mermaid.js integration
 
 #### AI Workflow Integration ✅
 - **Project Statement**: "Terminal-compatible design that doesn't disrupt AI development momentum"
 - **Specifications**:
-  - CLI_SPEC: Comprehensive terminal integration patterns
-  - UI_SPEC: Integrated terminal with xterm.js
+  - ../specs/CLI_SPEC: Comprehensive terminal integration patterns
+  - ../specs/UI_SPEC: Integrated terminal with xterm.js
   - ARCHITECTURE: Terminal proxy and WebSocket implementation
 
 #### Zero-Overhead Access ✅
