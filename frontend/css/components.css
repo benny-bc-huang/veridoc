@@ -65,6 +65,16 @@
     overflow-wrap: break-word;
 }
 
+.content-code {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    background: var(--bg-primary);
+    border-radius: 6px;
+    overflow: hidden;
+    font-family: 'Consolas', 'Liberation Mono', 'Menlo', 'Courier', monospace;
+}
+
 .content-markdown h1 {
     color: var(--text-accent);
     font-size: var(--font-size-3xl);
@@ -204,6 +214,10 @@
 .code-content {
     padding: var(--spacing-md);
     overflow: auto;
+    font-family: 'Consolas', 'Liberation Mono', 'Menlo', 'Courier', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    background: var(--bg-primary);
 }
 
 .code-line {
@@ -219,13 +233,16 @@
     min-width: 40px;
     padding-right: var(--spacing-sm);
     border-right: 1px solid var(--border);
+    font-family: 'Consolas', 'Liberation Mono', 'Menlo', 'Courier', monospace;
+    font-size: 13px;
 }
 
 .line-content {
     flex: 1;
     padding-left: var(--spacing-md);
-    white-space: pre-wrap;
-    word-break: break-all;
+    white-space: pre;
+    font-family: 'Consolas', 'Liberation Mono', 'Menlo', 'Courier', monospace;
+    overflow-x: auto;
 }
 
 /* Find Dialog */
