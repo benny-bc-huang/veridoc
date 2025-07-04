@@ -157,13 +157,22 @@ class ContentViewer {
             const extension = data.metadata.extension?.toLowerCase();
             const mimeType = data.metadata.mime_type;
 
+            console.log('Content viewer: File type detection:', { extension, mimeType, path });
+            console.log('Content viewer: isMarkdown:', this.isMarkdownFile(extension, mimeType));
+            console.log('Content viewer: isCode:', this.isCodeFile(extension, mimeType));
+            console.log('Content viewer: isImage:', this.isImageFile(extension, mimeType));
+
             if (this.isMarkdownFile(extension, mimeType)) {
+                console.log('Content viewer: Rendering as markdown');
                 await this.renderMarkdown(data.content);
             } else if (this.isCodeFile(extension, mimeType)) {
+                console.log('Content viewer: Rendering as code');
                 this.renderCode(data.content, extension);
             } else if (this.isImageFile(extension, mimeType)) {
+                console.log('Content viewer: Rendering as image');
                 this.renderImage(path);
             } else {
+                console.log('Content viewer: Rendering as plain text');
                 this.renderPlainText(data.content);
             }
 
@@ -244,9 +253,16 @@ class ContentViewer {
      * Highlight a single line of code
      */
     highlightCodeLine(line, language) {
-        // Use markdown renderer's enhanced highlighting if available
-        if (this.markdownRenderer) {
-            return this.markdownRenderer.highlightCode(line, language);
+        try {
+            // Use markdown renderer's enhanced highlighting if available
+            if (this.markdownRenderer && typeof this.markdownRenderer.highlightCode === 'function') {
+                const highlighted = this.markdownRenderer.highlightCode(line, language);
+                if (highlighted && highlighted !== line) {
+                    return highlighted;
+                }
+            }
+        } catch (error) {
+            console.warn('Enhanced highlighting failed:', error);
         }
         
         // Fallback to Prism.js
