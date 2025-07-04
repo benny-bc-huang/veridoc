@@ -150,6 +150,16 @@
     font-size: var(--font-size-sm);
 }
 
+.panel-btn.active {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.panel-btn.active:hover {
+    background: var(--accent-blue);
+    opacity: 0.9;
+}
+
 .panel-controls {
     display: flex;
     gap: var(--spacing-xs);

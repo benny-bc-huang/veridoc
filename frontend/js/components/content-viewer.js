@@ -51,11 +51,7 @@ class ContentViewer {
             toggleTocBtn.addEventListener('click', () => this.toggleTableOfContents());
         }
 
-        // ToC close button
-        const tocClose = document.getElementById('toc-close');
-        if (tocClose) {
-            tocClose.addEventListener('click', () => this.hideTableOfContents());
-        }
+        // Note: ToC close button removed - now using toggle button and click-outside
 
         // Close ToC when clicking outside
         document.addEventListener('click', (e) => {
@@ -645,6 +641,7 @@ class ContentViewer {
         const tocPanel = document.getElementById('toc-panel');
         const tocContent = document.getElementById('toc-content');
         const display = document.getElementById('content-display');
+        const toggleBtn = document.getElementById('toggle-toc-btn');
         
         if (!tocPanel || !tocContent || !display) return;
 
@@ -661,8 +658,14 @@ class ContentViewer {
             tocContent.innerHTML = '<p class="text-muted">Table of contents not available</p>';
         }
 
-        tocPanel.style.display = 'flex';
+        tocPanel.style.display = 'block';
         tocPanel.classList.add('open');
+        
+        // Update toggle button appearance
+        if (toggleBtn) {
+            toggleBtn.classList.add('active');
+            toggleBtn.title = 'Hide table of contents';
+        }
     }
 
     /**
@@ -670,6 +673,8 @@ class ContentViewer {
      */
     hideTableOfContents() {
         const tocPanel = document.getElementById('toc-panel');
+        const toggleBtn = document.getElementById('toggle-toc-btn');
+        
         if (tocPanel) {
             tocPanel.classList.remove('open');
             // Hide after animation completes
@@ -678,6 +683,12 @@ class ContentViewer {
                     tocPanel.style.display = 'none';
                 }
             }, 300); // Match CSS transition duration
+        }
+        
+        // Update toggle button appearance
+        if (toggleBtn) {
+            toggleBtn.classList.remove('active');
+            toggleBtn.title = 'Table of contents';
         }
     }
 
