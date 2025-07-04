@@ -157,13 +157,23 @@ class ContentViewer {
             const extension = data.metadata.extension?.toLowerCase();
             const mimeType = data.metadata.mime_type;
 
+            console.log('DEBUG: File rendering decision for', path);
+            console.log('DEBUG: Extension:', extension, 'MIME:', mimeType);
+            console.log('DEBUG: isMarkdown:', this.isMarkdownFile(extension, mimeType));
+            console.log('DEBUG: isCode:', this.isCodeFile(extension, mimeType));
+            console.log('DEBUG: isImage:', this.isImageFile(extension, mimeType));
+
             if (this.isMarkdownFile(extension, mimeType)) {
+                console.log('DEBUG: Rendering as MARKDOWN');
                 await this.renderMarkdown(data.content);
             } else if (this.isCodeFile(extension, mimeType)) {
+                console.log('DEBUG: Rendering as CODE');
                 this.renderCode(data.content, extension);
             } else if (this.isImageFile(extension, mimeType)) {
+                console.log('DEBUG: Rendering as IMAGE');
                 this.renderImage(path);
             } else {
+                console.log('DEBUG: Rendering as PLAIN TEXT');
                 this.renderPlainText(data.content);
             }
 
@@ -210,8 +220,10 @@ class ContentViewer {
      * Render code with syntax highlighting
      */
     renderCode(content, extension) {
+        console.log('DEBUG: renderCode called with extension:', extension);
         const display = document.getElementById('content-display');
         display.className = 'content-code';
+        console.log('DEBUG: Set display className to:', display.className);
 
         const language = this.getLanguageFromExtension(extension);
         const lines = content.split('\n');

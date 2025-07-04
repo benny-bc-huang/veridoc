@@ -117,11 +117,10 @@ async def get_file_content(
         # Validate and resolve path
         safe_path = security_manager.validate_path(path)
         
-        # Detect MIME type
-        mime_type, _ = mimetypes.guess_type(safe_path)
-        
-        # For non-text files, stream the file directly
-        if mime_type and not mime_type.startswith('text/'):
+        # Check if file is a text file using the file handler's method
+        if not file_handler._is_text_file(safe_path):
+            # For non-text files, stream the file directly
+            mime_type, _ = mimetypes.guess_type(safe_path)
             return FileResponse(safe_path, media_type=mime_type)
         
         # For text files, proceed with pagination
