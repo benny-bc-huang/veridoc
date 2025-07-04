@@ -225,7 +225,7 @@ class ContentViewer {
                 ${lines.map((line, index) => `
                     <div class="code-line" id="line-${index + 1}">
                         <span class="line-number">${index + 1}</span>
-                        <span class="line-content">${this.escapeHtml(line)}</span>
+                        <span class="line-content">${this.highlightCodeLine(line, language)}</span>
                     </div>
                 `).join('')}
             </div>
@@ -233,20 +233,33 @@ class ContentViewer {
 
         display.innerHTML = codeHTML;
 
-        // Apply syntax highlighting if Prism is available
-        if (window.Prism && language && Prism.languages[language]) {
-            const codeElements = display.querySelectorAll('.line-content');
-            codeElements.forEach(element => {
-                const highlighted = Prism.highlight(element.textContent, Prism.languages[language], language);
-                element.innerHTML = highlighted;
-            });
-        }
-
         // Hide TOC button for code files
         const tocBtn = document.getElementById('toggle-toc-btn');
         if (tocBtn) {
             tocBtn.style.display = 'none';
         }
+    }
+
+    /**
+     * Highlight a single line of code
+     */
+    highlightCodeLine(line, language) {
+        // Use markdown renderer's enhanced highlighting if available
+        if (this.markdownRenderer) {
+            return this.markdownRenderer.highlightCode(line, language);
+        }
+        
+        // Fallback to Prism.js
+        if (window.Prism && language && Prism.languages[language]) {
+            try {
+                return Prism.highlight(line, Prism.languages[language], language);
+            } catch (error) {
+                console.warn('Prism highlighting failed:', error);
+            }
+        }
+
+        // Final fallback to escaped HTML
+        return this.escapeHtml(line);
     }
 
     /**
@@ -727,7 +740,20 @@ class ContentViewer {
     }
 
     isCodeFile(extension, mimeType) {
-        const codeExtensions = ['.py', '.js', '.html', '.css', '.json', '.yaml', '.yml', '.xml', '.sh', '.bash', '.ts', '.jsx', '.tsx'];
+        const codeExtensions = [
+            // Top 10 languages (Phase 3 priority)
+            '.py', '.js', '.java', '.ts', '.c', '.cpp', '.cs', '.php', '.rb', '.go',
+            // Additional common languages
+            '.jsx', '.tsx', '.h', '.hpp', '.cc', '.cxx', '.kt', '.swift', '.rs', '.dart',
+            // Web technologies
+            '.html', '.css', '.scss', '.sass', '.vue', '.svelte',
+            // Data/config files
+            '.json', '.yaml', '.yml', '.xml', '.toml', '.ini', '.cfg', '.conf',
+            // Shell and scripting
+            '.sh', '.bash', '.zsh', '.fish', '.ps1', '.bat', '.cmd',
+            // Other
+            '.sql', '.r', '.lua', '.perl', '.vim', '.dockerfile'
+        ];
         return codeExtensions.includes(extension) || 
                (mimeType && (mimeType.startsWith('text/') || mimeType.includes('javascript') || mimeType.includes('json')));
     }
@@ -742,27 +768,59 @@ class ContentViewer {
      */
     getLanguageFromExtension(extension) {
         const languageMap = {
+            // Top 10 languages
             '.py': 'python',
             '.js': 'javascript',
+            '.java': 'java',
             '.ts': 'typescript',
-            '.jsx': 'jsx',
-            '.tsx': 'tsx',
+            '.c': 'c',
+            '.cpp': 'cpp',
+            '.cs': 'csharp',
+            '.php': 'php',
+            '.rb': 'ruby',
+            '.go': 'go',
+            // Additional languages
+            '.jsx': 'javascript',
+            '.tsx': 'typescript',
+            '.h': 'c',
+            '.hpp': 'cpp',
+            '.cc': 'cpp',
+            '.cxx': 'cpp',
+            '.kt': 'kotlin',
+            '.swift': 'swift',
+            '.rs': 'rust',
+            '.dart': 'dart',
+            // Web technologies
             '.html': 'html',
             '.css': 'css',
+            '.scss': 'scss',
+            '.sass': 'sass',
+            '.vue': 'vue',
+            '.svelte': 'svelte',
+            // Data/config files
             '.json': 'json',
             '.yaml': 'yaml',
             '.yml': 'yaml',
             '.xml': 'xml',
+            '.toml': 'toml',
+            '.ini': 'ini',
+            '.cfg': 'ini',
+            '.conf': 'ini',
+            // Shell and scripting
             '.sh': 'bash',
             '.bash': 'bash',
+            '.zsh': 'bash',
+            '.fish': 'bash',
+            '.ps1': 'powershell',
+            '.bat': 'batch',
+            '.cmd': 'batch',
+            // Other
             '.sql': 'sql',
-            '.go': 'go',
-            '.rs': 'rust',
-            '.cpp': 'cpp',
-            '.c': 'c',
-            '.java': 'java',
-            '.php': 'php',
-            '.rb': 'ruby'
+            '.r': 'r',
+            '.lua': 'lua',
+            '.perl': 'perl',
+            '.vim': 'vim',
+            '.dockerfile': 'docker'
         };
 
         return languageMap[extension] || null;
