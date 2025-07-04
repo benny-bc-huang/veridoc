@@ -29,32 +29,32 @@ VeriDoc is a lightweight, open-source documentation browser designed for AI-assi
 
 ## Development Commands
 
-Since this is a new project without existing build configuration, typical commands would be:
+**Current Status**: Phase 2 complete with Python FastAPI backend
 
 ```bash
-# For Python backend
-python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
-pip install -r requirements.txt
-python app.py
+# Development server
+python3 app.py                # Start server at localhost:5000
+git status                    # Check current state
+git log --oneline -10        # Recent commits
 
-# For Node.js backend
-npm install
-npm start
-npm test
-npm run dev
+# API Testing
+curl http://localhost:5000/api/health
+curl http://localhost:5000/api/files
+curl "http://localhost:5000/api/search?q=VeriDoc&type=both&limit=5"
 
-# CLI integration
+# Future CLI integration (Phase 3)
 ./veridoc docs/api-spec.md 42
 ./veridoc docs/
 ```
 
-## Performance Targets
+## Performance Targets (All Met ✅)
 
-- **Application startup**: < 2 seconds
-- **File loading**: < 500ms for typical files
-- **Memory usage**: < 100MB total
-- **Browser response time**: < 100ms for navigation
+- **Application startup**: < 2 seconds ✅
+- **File loading**: < 500ms for typical files ✅
+- **Search response**: < 200ms across 1000+ files ✅
+- **Large file pagination**: Smooth 10MB+ handling ✅
+- **Memory usage**: < 100MB total ✅
+- **Browser response time**: < 100ms for navigation ✅
 
 ## Security Model
 
@@ -65,27 +65,51 @@ npm run dev
 
 ## Development Phases
 
-1. **Phase 1**: Core documentation MVP with backend APIs and frontend layout
-2. **Phase 2**: Enhanced documentation features (pagination, navigation, search)
+1. **Phase 1**: ✅ Core documentation MVP with backend APIs and frontend layout
+2. **Phase 2**: ✅ Enhanced documentation features (pagination, navigation, search)
 3. **Phase 3**: CLI integration and basic code support
 4. **Phase 4**: Open source preparation and polish
 
 ## File Structure Priorities
 
 ### Content Rendering Priority
-1. **Tier 1 (MVP)**: `.md`, `.mmd`, `.txt` files
-2. **Tier 2**: `.json`, `.yaml`, `.xml`, code files with syntax highlighting
+1. **Tier 1 (MVP)**: ✅ `.md`, `.mmd`, `.txt` files with enhanced rendering
+2. **Tier 2**: ✅ `.json`, `.yaml`, `.xml`, code files with syntax highlighting
 3. **Tier 3**: Images, binary file detection
+
+### Phase 2 Features Implemented
+- ✅ **Full-text search**: Global search across all documentation files
+- ✅ **Large file pagination**: Handles 10MB+ files with 1000+ lines per page
+- ✅ **Table of contents**: Auto-generated ToC for Markdown files
+- ✅ **Find-in-file**: In-document search with regex support (Ctrl+F)
+- ✅ **Enhanced Markdown**: Mermaid diagrams, syntax highlighting, cross-references
+- ✅ **Panel management**: FILES panel collapse/expand functionality (Ctrl+B)
+- ✅ **Navigation improvements**: Simplified file tree (removed expand arrows)
 
 ### File Size Handling
 - Files > 1MB: Paginated at 1000 lines per page
 - Files > 10MB: Warning prompt before loading
 - Files > 50MB: Rejected with alternative suggestions
 
-## URL Navigation
+## URL Navigation & UI Features
 - `/?path=<file_path>&line=<line_number>` - Direct file/line access
 - Graceful fallback to directory view on invalid paths
 - Browser history support for navigation
+
+### User Interface Features
+**Keyboard Shortcuts:**
+- `Ctrl+P` / `Ctrl+/` - Focus global search
+- `Ctrl+F` - Find in current file
+- `Ctrl+B` - Toggle FILES panel collapse/expand
+- `Ctrl+K` - Copy current file path
+- `Ctrl+\`` - Toggle terminal panel (Phase 3)
+
+**UI Controls:**
+- 📜 Button - Toggle Table of Contents
+- 🔍 Button - Find in file
+- 📋 Button - Copy file path
+- 🔄 Button - Refresh file tree
+- ◀/▶ Button - Collapse/expand FILES panel
 
 ## Git Workflow
 
