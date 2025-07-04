@@ -173,3 +173,6 @@ config/local.yaml
 *.backup
 *.old
 *.orig
+
+# Prompt files
+*.prompt
