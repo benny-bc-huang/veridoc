@@ -86,3 +86,42 @@ npm run dev
 - `/?path=<file_path>&line=<line_number>` - Direct file/line access
 - Graceful fallback to directory view on invalid paths
 - Browser history support for navigation
+
+## Git Workflow
+
+**IMPORTANT**: Always use git for code changes. Follow this workflow for all development:
+
+### Before Making Changes
+```bash
+git status              # Check current state
+git diff               # Review uncommitted changes  
+git log --oneline -5   # Check recent commits
+```
+
+### After Making Changes
+```bash
+git add .                              # Stage all changes
+git commit -m "type(scope): message"   # Commit with descriptive message
+git push origin main                   # Push to GitHub
+```
+
+### Commit Message Format
+- **feat**: new feature
+- **fix**: bug fix
+- **docs**: documentation changes
+- **style**: code style changes
+- **refactor**: code refactoring
+- **test**: test additions/changes
+- **chore**: maintenance tasks
+
+### Examples
+```bash
+git commit -m "feat(file-tree): add directory navigation system"
+git commit -m "fix(layout): resolve panel scrolling synchronization"
+git commit -m "docs(readme): update installation instructions"
+```
+
+### Repository Status
+- **GitHub Repository**: https://github.com/benny-bc-huang/veridoc (private)
+- **Current Branch**: main
+- **Phase Status**: Phase 1 MVP Complete ✅
