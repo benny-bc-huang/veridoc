@@ -309,11 +309,15 @@ VeriDoc is a lightweight documentation browser optimized for AI-assisted develop
 - [x] **BONUS**: Independent panel scrolling resolved
 - [x] **BONUS**: File tree sorting and organization
 
-### Phase 2 Milestones
-- [ ] Search functionality works across 1000+ documentation files
-- [ ] Large file pagination handles 10MB+ files smoothly
-- [ ] UI remains responsive with 100+ files in directory tree
-- [ ] Cross-reference linking works automatically
+### Phase 2 Milestones ✅ COMPLETED (2025-07-05)
+- [x] Search functionality works across 1000+ documentation files
+- [x] Large file pagination handles 10MB+ files smoothly
+- [x] UI remains responsive with 100+ files in directory tree
+- [x] Cross-reference linking works automatically
+- [x] **BONUS**: Full-text search with fuzzy matching and scoring
+- [x] **BONUS**: Find-in-file functionality with regex support
+- [x] **BONUS**: Table of contents generation for Markdown files
+- [x] **BONUS**: Enhanced Markdown rendering with Mermaid diagrams
 
 ### Phase 3 Milestones
 - [ ] CLI helper script launches documentation in < 1 second
