@@ -6,6 +6,7 @@ import pytest
 import os
 import tempfile
 from pathlib import Path
+from typing import List
 from unittest.mock import patch, MagicMock
 
 from core.security import SecurityManager
@@ -38,7 +39,7 @@ class TestSecurityManager:
             except ValueError:
                 pytest.fail(f"Valid path should not raise exception: {path}")
 
-    def test_validate_path_malicious_paths(self, security_manager: SecurityManager, malicious_paths: list[str]):
+    def test_validate_path_malicious_paths(self, security_manager: SecurityManager, malicious_paths: List[str]):
         """Test validate_path with malicious paths."""
         for path in malicious_paths:
             with pytest.raises(ValueError):

@@ -7,7 +7,7 @@ import tempfile
 import os
 import shutil
 from pathlib import Path
-from typing import Generator
+from typing import Generator, List, Dict
 from fastapi.testclient import TestClient
 
 from app import app
@@ -200,7 +200,7 @@ def file_handler(security_manager: SecurityManager) -> FileHandler:
 
 
 @pytest.fixture
-def malicious_paths() -> list[str]:
+def malicious_paths() -> List[str]:
     """Common malicious path patterns for security testing."""
     return [
         "../../../etc/passwd",
@@ -255,7 +255,7 @@ graph TD
 
 
 @pytest.fixture
-def sample_search_content() -> dict[str, str]:
+def sample_search_content() -> Dict[str, str]:
     """Sample content for search testing."""
     return {
         "file1.md": "VeriDoc is a documentation browser",
