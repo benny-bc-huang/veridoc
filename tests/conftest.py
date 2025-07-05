@@ -177,21 +177,14 @@ def test_client(test_data_dir: Path, monkeypatch) -> TestClient:
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
     
-    # Use a simpler TestClient setup for compatibility
-    from fastapi.testclient import TestClient as FastAPITestClient
-    
+    # Create TestClient - handle compatibility issues with httpx 0.28.1 vs FastAPI 0.104.1
     try:
-        # Try the standard approach first
-        client = FastAPITestClient(app=test_app)
-        yield client
-    except TypeError:
-        # Fallback for compatibility issues - try without explicit app parameter
-        try:
-            client = FastAPITestClient(test_app)
-            yield client
-        except Exception as e:
-            # Last resort fallback
-            pytest.skip(f"TestClient compatibility issue: {e}")
+        return TestClient(test_app)
+    except TypeError as e:
+        if "unexpected keyword argument 'app'" in str(e):
+            pytest.skip("TestClient compatibility issue: httpx 0.28.1 vs FastAPI 0.104.1 - dependency version conflict")
+        else:
+            raise
 
 
 @pytest.fixture
