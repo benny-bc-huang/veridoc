@@ -5,12 +5,13 @@
 VeriDoc is an AI-optimized documentation browser designed for rapid development workflows. It provides sub-second documentation access optimized for AI-assisted development.
 
 ## Current Status
-- **Phase**: **🎉 Phase 5 - COMPLETE + ENHANCED FEATURES** ✅ (July 2025)
-- **Repository**: https://github.com/benny-bc-huang/veridoc (ready for public release)
+- **Phase**: **🎉 ALL PHASES COMPLETE + v1.0.1 RELEASED** ✅ (July 6, 2025)
+- **Repository**: https://github.com/benny-bc-huang/veridoc (private, ready for public)
 - **Branch**: main
-- **Status**: **ALL PHASES COMPLETE + ENHANCED FILE ACCESS + PROFESSIONAL BRANDING** - Production ready open source package
+- **Release**: **v1.0.1 LIVE on GitHub** - https://github.com/benny-bc-huang/veridoc/releases/tag/v1.0.1
+- **PyPI Status**: Package ready, awaiting account verification for publication
 - **Technology**: Python FastAPI backend with async support, Vanilla JS frontend, full CLI integration
-- **Achievement**: Professional package with pip installation, 100% test coverage, enhanced file accessibility, complete logo integration
+- **Achievement**: First official release published, 100% test coverage, professional branding, complete documentation
 
 ## Key Features Implemented
 ### Phase 1 (Core MVP):
@@ -54,7 +55,23 @@ VeriDoc is an AI-optimized documentation browser designed for rapid development 
 - Professional README with badges and installation instructions
 - Complete test suite validation and cross-platform compatibility
 
-### **🎨 LATEST ENHANCEMENTS (July 2025) - Enhanced File Access & Professional Branding**:
+### **🚀 LATEST RELEASE (July 6, 2025) - v1.0.1 Official Release**:
+
+#### GitHub Release Published
+- **Release Created**: v1.0.1 live at https://github.com/benny-bc-huang/veridoc/releases/tag/v1.0.1
+- **Release Notes**: Comprehensive documentation of features, security, and performance
+- **Package Files**: MANIFEST.in created for proper PyPI distribution
+- **Build Scripts**: Automated scripts for building and publishing (build_and_publish.sh)
+- **Documentation**: Added interface screenshot to README for visual demonstration
+
+#### PyPI Preparation Complete
+- **Dependencies**: requirements.txt aligned with pyproject.toml
+- **LICENSE**: Updated with third-party dependency attributions
+- **Configuration**: Removed duplicate pytest config from setup.cfg
+- **Build Tools**: Installed twine 6.1.0 and build package
+- **Status**: Package ready for PyPI publication pending account verification
+
+### **🎨 PREVIOUS ENHANCEMENTS (July 2025) - Enhanced File Access & Professional Branding**:
 
 #### Dot Files Exploration & Log File Rendering
 - **Hidden File Toggle**: Added 👁️/🙈 button in FILES panel for dot file visibility control
