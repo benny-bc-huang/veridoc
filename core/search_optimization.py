@@ -478,13 +478,15 @@ class OptimizedSearchEngine:
         self.base_path = base_path
         self.index = SearchIndex(base_path)
         self.cache = SearchCache()
-        self._index_update_task = None
         
-        # Start background index updates
-        self._start_background_updates()
+        # Background updates will be started when event loop is available
+        self._index_update_task = None
     
-    def _start_background_updates(self):
+    async def start_background_updates(self):
         """Start background task for periodic index updates."""
+        if self._index_update_task is not None:
+            return  # Already started
+            
         async def update_loop():
             while True:
                 try:
@@ -496,8 +498,7 @@ class OptimizedSearchEngine:
                     logger.error(f"Background index update failed: {e}")
         
         # Start task
-        loop = asyncio.get_event_loop()
-        self._index_update_task = loop.create_task(update_loop())
+        self._index_update_task = asyncio.create_task(update_loop())
     
     async def search(self, 
                     query: str, 

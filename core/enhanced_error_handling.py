@@ -5,6 +5,7 @@ Comprehensive error management and user-friendly responses
 
 import logging
 import traceback
+import functools
 from typing import Dict, Any, Optional, Union
 from datetime import datetime
 from pathlib import Path
@@ -334,8 +335,9 @@ def handle_api_error(func):
     return wrapper
 
 
-async def handle_async_api_error(func):
+def handle_async_api_error(func):
     """Decorator for async API endpoint error handling."""
+    @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         try:
             return await func(*args, **kwargs)

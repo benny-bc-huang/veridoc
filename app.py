@@ -6,6 +6,7 @@ AI-Optimized Documentation Browser
 
 import os
 import sys
+import logging
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
@@ -22,6 +23,9 @@ import select
 import termios
 import struct
 import fcntl
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent))
@@ -57,18 +61,34 @@ from models.api_models import (
 
 # Initialize configuration
 config = Config()
-app = FastAPI(
-    title="VeriDoc API",
-    description="AI-Optimized Documentation Browser API",
-    version="1.0.0"
-)
 
-# Initialize core components
+# Initialize core components (before app creation so they're available in lifespan)
 security_manager = SecurityManager(config.base_path)
 file_handler = FileHandler(security_manager)
 git_integration = GitIntegration(config.base_path)
 terminal_security = TerminalSecurityManager(config.base_path)
 search_engine = OptimizedSearchEngine(config.base_path)
+
+# Lifespan context manager for startup/shutdown events
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await performance_monitor.start_monitoring()
+    logger.info("Performance monitoring started")
+    await search_engine.start_background_updates()
+    logger.info("Search engine background updates started")
+    yield
+    # Shutdown
+    logger.info("Shutting down VeriDoc")
+
+app = FastAPI(
+    title="VeriDoc API",
+    description="AI-Optimized Documentation Browser API",
+    version="1.0.0",
+    lifespan=lifespan
+)
 
 # Serve static files
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
@@ -89,8 +109,8 @@ async def health_check():
         status=health_check["status"],
         version="1.0.0",
         base_path=str(config.base_path),
-        memory_usage_mb=metrics["memory_usage_mb"],
-        uptime_seconds=metrics["uptime_seconds"],
+        memory_usage_mb=int(metrics["memory_usage_mb"]),
+        uptime_seconds=int(metrics["uptime_seconds"]),
         active_connections=metrics["active_connections"]
     )
 

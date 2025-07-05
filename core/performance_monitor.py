@@ -7,6 +7,7 @@ import time
 import psutil
 import logging
 import asyncio
+import functools
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
@@ -58,11 +59,14 @@ class PerformanceMonitor:
         # Process reference for memory monitoring
         self.process = psutil.Process()
         
-        # Start background monitoring
-        self._start_monitoring()
+        # Background monitoring will be started when event loop is available
+        self.monitoring_task = None
     
-    def _start_monitoring(self):
+    async def start_monitoring(self):
         """Start background performance monitoring."""
+        if self.monitoring_task is not None:
+            return  # Already started
+            
         async def monitor_loop():
             while True:
                 try:
@@ -72,8 +76,7 @@ class PerformanceMonitor:
                     logger.error(f"Performance monitoring error: {e}")
         
         # Start monitoring task
-        loop = asyncio.get_event_loop()
-        asyncio.create_task(monitor_loop())
+        self.monitoring_task = asyncio.create_task(monitor_loop())
     
     def _collect_metrics(self):
         """Collect current performance metrics."""
@@ -385,6 +388,7 @@ def performance_tracking(func):
 
 def async_performance_tracking(func):
     """Decorator for tracking async function performance."""
+    @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         start_time = time.time()
         memory_before = performance_monitor.get_memory_usage()
