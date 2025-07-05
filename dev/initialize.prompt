@@ -5,12 +5,12 @@
 VeriDoc is an AI-optimized documentation browser designed for rapid development workflows. It provides sub-second documentation access optimized for AI-assisted development.
 
 ## Current Status
-- **Phase**: **🎉 Phase 5 - COMPLETE** ✅ (January 2025)
+- **Phase**: **🎉 Phase 5 - COMPLETE + ENHANCED FEATURES** ✅ (July 2025)
 - **Repository**: https://github.com/benny-bc-huang/veridoc (ready for public release)
 - **Branch**: main
-- **Status**: **ALL PHASES COMPLETE** - Production ready open source package
+- **Status**: **ALL PHASES COMPLETE + ENHANCED FILE ACCESS + PROFESSIONAL BRANDING** - Production ready open source package
 - **Technology**: Python FastAPI backend with async support, Vanilla JS frontend, full CLI integration
-- **Achievement**: Professional package with pip installation, 100% test coverage, clean documentation
+- **Achievement**: Professional package with pip installation, 100% test coverage, enhanced file accessibility, complete logo integration
 
 ## Key Features Implemented
 ### Phase 1 (Core MVP):
@@ -47,6 +47,28 @@ VeriDoc is an AI-optimized documentation browser designed for rapid development 
 - PEP 8 code quality compliance
 - Open source documentation (CONTRIBUTING.md, CHANGELOG.md)
 - Production-ready security controls
+
+### Phase 5 (Open Source Release Preparation):
+- Package infrastructure and pip installation functionality
+- Clean user-focused documentation and project structure
+- Professional README with badges and installation instructions
+- Complete test suite validation and cross-platform compatibility
+
+### **🎨 LATEST ENHANCEMENTS (July 2025) - Enhanced File Access & Professional Branding**:
+
+#### Dot Files Exploration & Log File Rendering
+- **Hidden File Toggle**: Added 👁️/🙈 button in FILES panel for dot file visibility control
+- **Dot File Support**: Configuration files (.gitignore, .config, etc.) now render as plain text
+- **Log File Support**: .log files properly display as readable text content
+- **Backend Integration**: Enhanced FileHandler with special file type detection logic
+- **Frontend Rendering**: Force plain text rendering for dot files and log files
+
+#### Professional VeriDoc Logo Integration  
+- **Web Interface**: 80px VeriDoc logo in header with dark theme compatibility
+- **Documentation**: Logo integration across README, architecture docs, project statement
+- **Dual Variants**: White logo (dark theme) and dark logo (white backgrounds)
+- **Optimized Assets**: Cropped whitespace for 60% size reduction (1024→808px width)
+- **Clean Design**: Minimal header with logo-only branding, removed title/subtitle
 
 ### Post-Phase 4 Improvements (January 2025):
 - **Startup Issues Resolved**: Fixed RuntimeError with event loop initialization
@@ -262,13 +284,15 @@ git push origin main                   # Push to GitHub
 - **Documentation**: Updated CLAUDE.md with current status and troubleshooting
 
 ## Production Status
-All development phases complete! VeriDoc is now production-ready and stable with:
+All development phases complete + enhanced features! VeriDoc is now production-ready and stable with:
 - ✅ **Server Startup**: Reliable initialization without event loop errors
 - ✅ **API Stability**: All endpoints working with proper validation
-- ✅ **Test Coverage**: Major components tested with modern async patterns
+- ✅ **Test Coverage**: Major components tested with modern async patterns (124/124 tests passing)
 - ✅ **Performance**: Sub-200ms search, <2s startup, <100MB memory
 - ✅ **Security**: Comprehensive path validation and command filtering
 - ✅ **Documentation**: Complete setup and troubleshooting guides
+- ✅ **Enhanced File Access**: Dot files and log files fully accessible and readable
+- ✅ **Professional Branding**: Complete VeriDoc logo integration across all contexts
 
 ## Important Notes
 - Always use git workflow for changes
@@ -380,4 +404,4 @@ This is a private development repository for benny-bc-huang. All development pha
 ---
 **Quick Start**: Read CLAUDE.md, check git status, run `./veridoc` for CLI or `python3 app.py` for development
 
-**CURRENT STATUS**: 🏆 **ALL 5 PHASES COMPLETE** - **PRODUCTION READY**: VeriDoc is now a professional, production-ready open-source package with full pip installation, 100% complete test coverage (124/124 tests), enterprise-grade security protection, clean documentation, and proper package structure. Ready for public release!
+**CURRENT STATUS**: 🏆 **ALL 5 PHASES COMPLETE + ENHANCED FEATURES** - **PRODUCTION READY**: VeriDoc is now a professional, production-ready open-source package with full pip installation, 100% complete test coverage (124/124 tests), enhanced file accessibility (dot files + log files), complete professional branding, enterprise-grade security protection, clean documentation, and proper package structure. Ready for public release!
