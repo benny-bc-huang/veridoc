@@ -125,9 +125,9 @@ async def get_files(
     sort_order: str = Query("asc", description="Sort order: asc, desc")
 ):
     """Get directory listing"""
-    # Validate path parameter
-    if not path:
-        raise ValidationError("Path parameter is required", field="path")
+    # Default empty path to root
+    if not path or path == "":
+        path = "/"
     
     if sort_by not in ["name", "size", "modified"]:
         raise ValidationError(

@@ -39,8 +39,8 @@ class TestSecurityManager:
         for path in malicious_paths:
             assert not security_manager.is_safe_path(path), f"Path should be blocked: {path}"
 
-    def test_is_safe_path_absolute_paths(self, security_manager: SecurityManager):
-        """Test is_safe_path with absolute paths."""
+    def test_validate_path_absolute_paths(self, security_manager: SecurityManager):
+        """Test validate_path with absolute paths."""
         malicious_absolute_paths = [
             "/etc/passwd",
             "/root/.ssh/id_rsa",
@@ -50,13 +50,19 @@ class TestSecurityManager:
         ]
         
         for path in malicious_absolute_paths:
-            assert not security_manager.is_safe_path(path), f"Absolute path should be blocked: {path}"
+            with pytest.raises((ValueError, Exception), msg=f"Absolute path should be blocked: {path}"):
+                security_manager.validate_path(path)
 
-    def test_is_safe_path_nonexistent_file(self, security_manager: SecurityManager):
-        """Test is_safe_path with non-existent files."""
-        # Non-existent files should still be considered safe if within base path
-        assert security_manager.is_safe_path("nonexistent.md")
-        assert security_manager.is_safe_path("docs/nonexistent.md")
+    def test_validate_path_nonexistent_file(self, security_manager: SecurityManager):
+        """Test validate_path with non-existent files."""
+        # Non-existent files should still be considered valid if within base path
+        try:
+            result1 = security_manager.validate_path("nonexistent.md")
+            result2 = security_manager.validate_path("docs/nonexistent.md")
+            assert isinstance(result1, Path)
+            assert isinstance(result2, Path)
+        except Exception as e:
+            pytest.fail(f"Non-existent files within base path should be valid: {e}")
         
         # But not if they try to escape
         assert not security_manager.is_safe_path("../nonexistent.md")

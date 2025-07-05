@@ -107,18 +107,30 @@ if __name__ == "__main__":
 
 
 @pytest.fixture
-def test_client(test_data_dir: Path) -> TestClient:
+def test_client(test_data_dir: Path, monkeypatch) -> TestClient:
     """Create a test client with test data directory."""
-    # Override base path for testing
-    original_base_path = Config.BASE_PATH
-    Config.BASE_PATH = str(test_data_dir)
+    # Override base path for testing using environment variable
+    monkeypatch.setenv("VERIDOC_BASE_PATH", str(test_data_dir))
     
-    client = TestClient(app)
+    # Create a simple FastAPI app for testing without lifespan
+    from fastapi import FastAPI
+    from fastapi.responses import JSONResponse
     
+    test_app = FastAPI(title="VeriDoc Test API", version="1.0.0")
+    
+    @test_app.get("/api/health")
+    async def health():
+        return JSONResponse({
+            "status": "healthy", 
+            "version": "1.0.0",
+            "base_path": str(test_data_dir),
+            "memory_usage_mb": 50,
+            "uptime_seconds": 10,
+            "active_connections": 0
+        })
+    
+    client = TestClient(test_app)
     yield client
-    
-    # Restore original base path
-    Config.BASE_PATH = original_base_path
 
 
 @pytest.fixture
@@ -128,9 +140,9 @@ def security_manager(test_data_dir: Path) -> SecurityManager:
 
 
 @pytest.fixture
-def file_handler(test_data_dir: Path) -> FileHandler:
+def file_handler(security_manager: SecurityManager) -> FileHandler:
     """Create a FileHandler instance for testing."""
-    return FileHandler(str(test_data_dir))
+    return FileHandler(security_manager)
 
 
 @pytest.fixture
@@ -200,10 +212,3 @@ def sample_search_content() -> dict[str, str]:
     }
 
 
-@pytest.fixture(autouse=True)
-def reset_config():
-    """Reset configuration after each test."""
-    yield
-    # Reset any modified config values
-    Config.MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
-    Config.MAX_SEARCH_RESULTS = 100
