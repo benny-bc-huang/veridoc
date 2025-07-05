@@ -33,10 +33,25 @@ VeriDoc is a lightweight, open-source documentation browser designed for AI-assi
 
 ## Installation
 
-```bash
-# Install via pip
-pip install veridoc
+> **Note**: VeriDoc has not yet been published to PyPI. For now, please install from source.
 
+### Install from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/benny-bc-huang/veridoc.git
+cd veridoc
+
+# Install in development mode
+pip install -e .
+
+# Or install directly
+pip install .
+```
+
+### Usage
+
+```bash
 # Launch in current directory
 veridoc
 
@@ -44,6 +59,13 @@ veridoc
 veridoc docs/
 veridoc README.md
 veridoc README.md 42  # Jump to line 42
+```
+
+### Coming Soon: PyPI Installation
+
+Once published to PyPI, you'll be able to install with:
+```bash
+pip install veridoc
 ```
 
 ## Quick Start
