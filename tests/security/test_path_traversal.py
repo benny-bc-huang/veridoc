@@ -69,15 +69,36 @@ class TestPathTraversalPrevention:
 
     def test_null_byte_injection(self, test_client: TestClient):
         """Test null byte injection attempts are blocked."""
-        null_byte_paths = [
+        # Test URL-encoded null bytes (these can be sent via HTTP)
+        url_encoded_null_paths = [
+            "../../etc/passwd%00.txt",
+            "../../../etc/passwd%00.md", 
+            "safe_file.txt%00../../etc/passwd",
+        ]
+        
+        for path in url_encoded_null_paths:
+            response = test_client.get(f"/api/files?path={path}")
+            assert response.status_code in [403, 422], f"Null byte path should be blocked: {path}"
+            
+        # Test direct SecurityManager validation for raw null bytes
+        from veridoc.core.security import SecurityManager
+        import tempfile
+        from pathlib import Path
+        
+        temp_dir = Path(tempfile.mkdtemp()) 
+        security_manager = SecurityManager(temp_dir)
+        
+        raw_null_paths = [
             "../../etc/passwd\x00.txt",
-            "../../../etc/passwd%00.md",
             "safe_file.txt\x00../../etc/passwd",
         ]
         
-        for path in null_byte_paths:
-            response = test_client.get(f"/api/files?path={path}")
-            assert response.status_code in [403, 422], f"Null byte path should be blocked: {path}"
+        for path in raw_null_paths:
+            try:
+                security_manager.validate_path(path)
+                assert False, f"Raw null byte path should be blocked: {repr(path)}"
+            except ValueError:
+                pass  # Expected - null bytes should be blocked
 
     def test_file_protocol_attempts(self, test_client: TestClient):
         """Test file:// protocol attempts are blocked."""

@@ -4,6 +4,8 @@ Path validation and access control
 """
 
 import os
+import urllib.parse
+import unicodedata
 from pathlib import Path
 from typing import Union
 
@@ -19,6 +21,70 @@ class SecurityManager:
 
         if not self.base_path.is_dir():
             raise ValueError(f"Base path is not a directory: {self.base_path}")
+    
+    def _normalize_and_decode_path(self, user_path: str) -> str:
+        """
+        Normalize and decode path to catch advanced evasion techniques.
+        
+        Args:
+            user_path: Raw user input path
+            
+        Returns:
+            Normalized path string
+            
+        Raises:
+            ValueError: If malicious content detected
+        """
+        original_path = user_path
+        
+        # Check for null bytes before any processing
+        if "\x00" in user_path or "%00" in user_path:
+            raise ValueError("Null bytes not allowed in path")
+        
+        # Perform multiple rounds of URL decoding to catch double/triple encoding
+        for i in range(3):  # Maximum 3 levels of encoding
+            decoded = urllib.parse.unquote(user_path)
+            if decoded == user_path:
+                break  # No more decoding possible
+            user_path = decoded
+            
+            # Check for null bytes after each decoding round
+            if "\x00" in user_path:
+                raise ValueError("Null bytes not allowed in path")
+        
+        # Unicode normalization to catch fullwidth and other Unicode evasions
+        # Convert to NFD (decomposed) form, then back to NFC (composed)
+        user_path = unicodedata.normalize('NFD', user_path)
+        user_path = unicodedata.normalize('NFC', user_path)
+        
+        # Replace common Unicode lookalikes with ASCII equivalents
+        unicode_replacements = {
+            '\uff0e': '.',  # Fullwidth full stop
+            '\uff0f': '/',  # Fullwidth solidus
+            '\uff3c': '\\', # Fullwidth reverse solidus
+            '\u002e': '.',  # Regular full stop (should be unchanged)
+            '\u002f': '/',  # Regular solidus (should be unchanged)
+            '\u005c': '\\', # Regular reverse solidus (should be unchanged)
+        }
+        
+        for unicode_char, ascii_char in unicode_replacements.items():
+            user_path = user_path.replace(unicode_char, ascii_char)
+        
+        # Additional check for any remaining suspicious Unicode characters
+        # Look for characters that could be path separators or dots
+        suspicious_chars = []
+        for char in user_path:
+            if unicodedata.category(char).startswith('P') and char not in './\\-_':
+                # Punctuation that's not common in paths
+                suspicious_chars.append(char)
+        
+        if suspicious_chars:
+            # Only raise if the suspicious chars could form path traversal
+            cleaned = ''.join(c for c in user_path if c not in suspicious_chars)
+            if '..' in cleaned or cleaned != user_path:
+                raise ValueError(f"Suspicious Unicode characters in path: {suspicious_chars}")
+        
+        return user_path
     
     def validate_path(self, user_path: str) -> Path:
         """
@@ -44,6 +110,9 @@ class SecurityManager:
         # Handle empty string as base path
         if user_path == "":
             return self.base_path
+        
+        # Apply advanced normalization and decoding to catch evasion attempts
+        user_path = self._normalize_and_decode_path(user_path)
         
         # Check for URL schemes
         if "://" in user_path:
@@ -73,7 +142,7 @@ class SecurityManager:
         if user_path.startswith('\\\\') or user_path.startswith('//'):
             raise ValueError("UNC paths not allowed")
             
-        # Check for null bytes
+        # Check for null bytes (redundant but kept for clarity)
         if "\x00" in user_path:
             raise ValueError("Null bytes not allowed in path")
 

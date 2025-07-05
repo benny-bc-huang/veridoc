@@ -151,26 +151,29 @@ def test_client(test_data_dir: Path, monkeypatch) -> TestClient:
     
     @test_app.get("/api/files")
     async def get_files(path: str = ""):
-        # Validate path - convert string to Path if needed
-        if isinstance(path, str):
-            if path == "" or path == "/":
-                path = test_data_dir
-            else:
-                path = test_data_dir / path
-        
-        # Check if path exists
-        if not path.exists():
-            raise HTTPException(status_code=404, detail="Path not found")
-        
+        # Use SecurityManager for path validation like the real server
         try:
-            files = await file_handler.list_directory(path)
+            # Create a temporary SecurityManager for testing with the test directory
+            temp_security = SecurityManager(test_data_dir)
+            safe_path = temp_security.validate_path(path)
         except ValueError as e:
             if "Path traversal" in str(e) or "outside base directory" in str(e):
                 raise HTTPException(status_code=403, detail="Access denied")
-            elif "not a directory" in str(e):
-                raise HTTPException(status_code=404, detail="Path not found")
             else:
-                raise HTTPException(status_code=400, detail=str(e))
+                raise HTTPException(status_code=403, detail="Access denied")
+        
+        # Check if path exists
+        if not safe_path.exists():
+            raise HTTPException(status_code=404, detail="Path not found")
+        
+        # Check if path is a directory
+        if not safe_path.is_dir():
+            raise HTTPException(status_code=400, detail="Path is not a directory")
+        
+        try:
+            files = await file_handler.list_directory(safe_path)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
         
         # Convert FileItem objects to dict format expected by tests
         file_items = []
@@ -185,20 +188,27 @@ def test_client(test_data_dir: Path, monkeypatch) -> TestClient:
     
     @test_app.get("/api/file_content")
     async def get_file_content(path: str, page: int = 1, lines_per_page: int = 1000):
-        # Convert string path to Path object
-        if isinstance(path, str):
-            path = test_data_dir / path
+        # Use SecurityManager for path validation like the real server
+        try:
+            # Create a temporary SecurityManager for testing with the test directory
+            temp_security = SecurityManager(test_data_dir)
+            safe_path = temp_security.validate_path(path)
+        except ValueError as e:
+            if "Path traversal" in str(e) or "outside base directory" in str(e):
+                raise HTTPException(status_code=403, detail="Access denied")
+            else:
+                raise HTTPException(status_code=403, detail="Access denied")
         
         # Check if file exists
-        if not path.exists():
+        if not safe_path.exists():
             raise HTTPException(status_code=404, detail="File not found")
         
         # Check if it's a directory
-        if path.is_dir():
+        if safe_path.is_dir():
             raise HTTPException(status_code=400, detail="Cannot read directory as file")
         
         try:
-            result = await file_handler.get_file_content(path, page, lines_per_page)
+            result = await file_handler.get_file_content(safe_path, page, lines_per_page)
             
             # Check if page is valid (if we got empty content for high page numbers)
             if page > result.pagination.total_pages:
@@ -206,12 +216,7 @@ def test_client(test_data_dir: Path, monkeypatch) -> TestClient:
                 
             return result.model_dump()
         except ValueError as e:
-            if "Path traversal" in str(e) or "outside base directory" in str(e):
-                raise HTTPException(status_code=403, detail="Access denied")
-            elif "not a file" in str(e):
-                raise HTTPException(status_code=400, detail="Cannot read directory as file")
-            else:
-                raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e))
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail="File not found")
     
