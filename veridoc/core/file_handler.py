@@ -244,6 +244,15 @@ class FileHandler:
     def _is_text_file(self, file_path: Path) -> bool:
         """Check if file is a text file"""
         extension = file_path.suffix.lower()
+        filename = file_path.name
+        
+        # Treat dot files (configuration files) as text files
+        if filename.startswith('.') and extension == '':
+            return True
+        
+        # Treat .log files as text files
+        if extension == '.log':
+            return True
         
         # Check known text extensions
         text_extensions = (
