@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="veridoc/frontend/logo.png" alt="VeriDoc Logo" width="120" height="120">
+  <img src="logo-dark.png" alt="VeriDoc Logo" width="120" height="120">
   
   # VeriDoc
   

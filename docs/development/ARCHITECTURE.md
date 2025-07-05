@@ -1,7 +1,7 @@
 # VeriDoc Architecture Specification
 
 <div align="center">
-  <img src="../../veridoc/frontend/logo.png" alt="VeriDoc Logo" width="80" height="80">
+  <img src="../../logo-dark.png" alt="VeriDoc Logo" width="80" height="80">
 </div>
 
 ## System Overview
