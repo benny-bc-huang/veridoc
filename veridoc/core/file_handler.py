@@ -23,7 +23,7 @@ class FileHandler:
         # File type categories for rendering priority
         self.markdown_extensions = {".md", ".markdown", ".mdown", ".mkd"}
         self.diagram_extensions = {".mmd", ".mermaid"}
-        self.text_extensions = {".txt", ".text"}
+        self.text_extensions = {".txt", ".text", ".log"}
         self.code_extensions = {
             # Top 10 languages (Phase 3 priority)
             ".py", ".js", ".java", ".ts", ".c", ".cpp", ".cs", ".php", ".rb", ".go",
@@ -266,6 +266,15 @@ class FileHandler:
     def get_file_category(self, file_path: Path) -> str:
         """Get file category for rendering priority"""
         extension = file_path.suffix.lower()
+        filename = file_path.name
+        
+        # Treat dot files (configuration files) as text files
+        if filename.startswith('.') and extension == '':
+            return "text"
+        
+        # Treat .log files as text files
+        if extension == '.log':
+            return "text"
         
         if extension in self.markdown_extensions:
             return "markdown"

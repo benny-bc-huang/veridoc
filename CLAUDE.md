@@ -32,6 +32,28 @@ VeriDoc is a lightweight, open-source documentation browser designed for AI-assi
 - **Zero-Context-Switch**: <500ms startup time to maintain AI development flow
 - **Terminal-Native**: Direct integration with command-line AI workflows
 
+## 📋 Core Functions Quick Reference
+
+For detailed implementation understanding without codebase scanning, see **[Core Functions Reference](docs/development/CORE_FUNCTIONS.md)**.
+
+**Key Components Summary**:
+- **SecurityManager**: Multi-layer path validation with enterprise-grade protection (`validate_path()`, `is_safe_filename()`)
+- **FileHandler**: Secure file operations with pagination (`list_directory()`, `get_file_content()`, `get_file_metadata()`)
+- **GitIntegration**: Git operations for change tracking (`get_file_status()`, `get_file_history()`, `is_git_repository` property)
+- **API Server**: FastAPI endpoints with async support (`/api/files`, `/api/file_content`, `/api/search`, WebSocket terminal)
+
+**Essential Patterns**:
+```python
+# Path Security: Always validate first
+safe_path = security_manager.validate_path(user_input)
+
+# Git Check: Use property, not method
+if git_integration.is_git_repository:
+
+# Async Operations: Use await for file I/O
+content = await file_handler.get_file_content(safe_path)
+```
+
 ## 🔄 Claude Code Workflow Instructions
 
 **MANDATORY**: Follow these workflow instructions when working with VeriDoc:

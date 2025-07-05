@@ -10,6 +10,7 @@ class FileTree {
         this.currentPath = '/';
         this.selectedItem = null;
         this.cache = new Map();
+        this.showHidden = false;
         
         this.init();
     }
@@ -57,7 +58,7 @@ class FileTree {
         try {
             console.log('FileTree: Loading directory:', path);
             const data = await this.api.getFiles(path, {
-                includeHidden: false,
+                includeHidden: this.showHidden,
                 sortBy: 'name',
                 sortOrder: 'asc'
             });
@@ -163,10 +164,19 @@ class FileTree {
      */
     getIcon(item) {
         if (item.type === 'directory') {
+            // Special icon for hidden directories
+            if (item.name.startsWith('.')) {
+                return '📂';
+            }
             return '📁';
         }
 
         const extension = item.extension?.toLowerCase();
+        
+        // Special handling for dot files (configuration files)
+        if (item.name.startsWith('.')) {
+            return '⚙️';
+        }
         
         // Markdown files
         if (['.md', '.markdown', '.mdown', '.mkd'].includes(extension)) {
@@ -183,7 +193,7 @@ class FileTree {
             return '💻';
         }
         
-        // Text files
+        // Text files (including .log files)
         if (['.txt', '.text', '.log'].includes(extension)) {
             return '📋';
         }
@@ -407,6 +417,19 @@ class FileTree {
         this.cache.clear();
         this.api.clearCache();
         this.init();
+    }
+
+    /**
+     * Toggle hidden files visibility
+     */
+    toggleHiddenFiles() {
+        this.showHidden = !this.showHidden;
+        this.cache.clear();
+        this.api.clearCache();
+        this.loadDirectory(this.currentPath);
+        
+        // Emit event to update UI toggle button state
+        this.emit('hiddenToggle', { showHidden: this.showHidden });
     }
 
     /**

@@ -215,6 +215,11 @@ class VeriDocApp {
                 console.log('App: Received filetree:open event:', e.detail);
                 this.handleFileOpen(e.detail);
             });
+
+            fileTreeContainer.addEventListener('filetree:hiddenToggle', (e) => {
+                console.log('App: Received filetree:hiddenToggle event:', e.detail);
+                this.updateHiddenToggleButton(e.detail.showHidden);
+            });
             console.log('App: File tree event listeners attached');
         } else {
             console.error('App: Could not find file tree container for event binding');
@@ -237,6 +242,11 @@ class VeriDocApp {
 
         this.components.urlHandler.on('search', (params) => {
             this.handleUrlSearch(params);
+        });
+
+        // Toggle hidden files
+        document.getElementById('toggle-hidden-btn')?.addEventListener('click', () => {
+            this.toggleHiddenFiles();
         });
 
         // Files panel collapse/expand
@@ -479,6 +489,26 @@ class VeriDocApp {
                     </div>
                 `;
             }
+        }
+    }
+
+    /**
+     * Toggle hidden files visibility
+     */
+    toggleHiddenFiles() {
+        if (this.components.fileTree) {
+            this.components.fileTree.toggleHiddenFiles();
+        }
+    }
+
+    /**
+     * Update hidden toggle button state
+     */
+    updateHiddenToggleButton(showHidden) {
+        const toggleBtn = document.getElementById('toggle-hidden-btn');
+        if (toggleBtn) {
+            toggleBtn.textContent = showHidden ? '🙈' : '👁️';
+            toggleBtn.title = showHidden ? 'Hide dot files' : 'Show dot files';
         }
     }
 

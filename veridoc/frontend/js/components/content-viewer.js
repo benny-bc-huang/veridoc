@@ -156,14 +156,19 @@ class ContentViewer {
             // Determine content type and render
             const extension = data.metadata.extension?.toLowerCase();
             const mimeType = data.metadata.mime_type;
+            const filename = path.split('/').pop();
 
             console.log('DEBUG: File rendering decision for', path);
-            console.log('DEBUG: Extension:', extension, 'MIME:', mimeType);
+            console.log('DEBUG: Extension:', extension, 'MIME:', mimeType, 'Filename:', filename);
             console.log('DEBUG: isMarkdown:', this.isMarkdownFile(extension, mimeType));
             console.log('DEBUG: isCode:', this.isCodeFile(extension, mimeType));
             console.log('DEBUG: isImage:', this.isImageFile(extension, mimeType));
 
-            if (this.isMarkdownFile(extension, mimeType)) {
+            // Force dot files and .log files to be rendered as plain text
+            if ((filename.startsWith('.') && extension === '') || extension === '.log') {
+                console.log('DEBUG: Rendering as PLAIN TEXT (dot file or .log file)');
+                this.renderPlainText(data.content);
+            } else if (this.isMarkdownFile(extension, mimeType)) {
                 console.log('DEBUG: Rendering as MARKDOWN');
                 await this.renderMarkdown(data.content);
             } else if (this.isCodeFile(extension, mimeType)) {
