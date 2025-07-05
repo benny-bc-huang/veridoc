@@ -5,12 +5,12 @@
 VeriDoc is an AI-optimized documentation browser designed for rapid development workflows. It provides sub-second documentation access optimized for AI-assisted development.
 
 ## Current Status
-- **Phase**: Phase 4 Complete ✅ + **PRIORITY: 100% Test Suite Pass Rate** (January 2025)
-- **Repository**: https://github.com/benny-bc-huang/veridoc (private)
+- **Phase**: **Phase 5 - Open Source Release Preparation** 🚧 (January 2025)
+- **Repository**: https://github.com/benny-bc-huang/veridoc (private → preparing for public)
 - **Branch**: main
-- **Status**: Production ready, **CRITICAL: Test suite needs fixes** (61% passing)
+- **Status**: All phases complete, **PRIORITY: Easy Installation & Clean Documentation**
 - **Technology**: Python FastAPI backend with async support, Vanilla JS frontend, CLI integration
-- **Current Goal**: Fix all failing tests to achieve 100% test suite compatibility
+- **Current Goal**: Prepare for public repository release with easy installation and user-focused documentation
 
 ## Key Features Implemented
 ### Phase 1 (Core MVP):
@@ -142,6 +142,28 @@ git push origin main                   # Push to GitHub
 2. **Phase 2**: ✅ Complete - Enhanced features (search, pagination, ToC)
 3. **Phase 3**: ✅ Complete - CLI integration and terminal functionality
 4. **Phase 4**: ✅ Complete - Open source preparation and production polish
+5. **Phase 5**: 🚧 **IN PROGRESS** - Open source release preparation
+
+## Phase 5 Objectives - Open Source Release Preparation
+
+**Goal 1: Easy Install & Execute**
+- ✅ Package infrastructure analysis complete → `docs/development/PHASE5_ANALYSIS.md`
+- 🔄 Fix Python package structure and entry points (enable `pip install .`)
+- 🔄 Test cross-platform installation flow
+- Target: `pip install veridoc` → `veridoc docs/` workflow
+
+**Goal 2: Clean & Accurate README**
+- ✅ Content analysis complete (441 lines → 150 lines) → `docs/development/PHASE5_ANALYSIS.md`
+- 🔄 Rewrite user-focused README (target ~150 lines)
+- 🔄 Move development details to appropriate files (DEVELOPMENT.md, docs/)
+- 🔄 Fix incorrect URLs and "Future Installation" claims
+- Target: Clear first impression for open source contributors
+
+**Execution Plan**:
+1. **Package Structure**: Create proper Python package, fix entry points
+2. **README Rewrite**: User-focused content, move development details  
+3. **Testing**: Validate complete installation flow works
+4. **Documentation**: Ensure all information is accurate and up-to-date
 
 ## Key Files to Know
 - `CLAUDE.md` - Instructions for Claude Code
@@ -312,4 +334,4 @@ This is a private development repository for benny-bc-huang. All development pha
 ---
 **Quick Start**: Read CLAUDE.md, check git status, run `./veridoc` for CLI or `python3 app.py` for development
 
-**CURRENT STATUS**: 🏆 **100% unit test pass rate achieved (70/70)!** All major architectural compatibility issues resolved. Production-ready with comprehensive test coverage.
+**CURRENT STATUS**: 🏆 **Phase 5 - Open Source Release Preparation**: All core development complete (100% test coverage), now focusing on easy installation and clean user-facing documentation for public repository release.

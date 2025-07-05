@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 """
-VeriDoc Backend Server - Development Entry Point
-For development use only. In production, use: veridoc
+VeriDoc Server Main Module
+Allows running the server with: python -m veridoc
 """
-
-# Import the main server from the package
-from veridoc.server import app
 
 if __name__ == "__main__":
     import uvicorn
     import os
+    from .server import app
     
     # Get configuration from environment
     port = int(os.getenv("PORT", 5000))

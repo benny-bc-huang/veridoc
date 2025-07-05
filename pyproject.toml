@@ -72,6 +72,7 @@ veridoc = [
     "completions/*",
     "*.md",
     "*.txt",
+    "*.py",
 ]
 
 [tool.black]

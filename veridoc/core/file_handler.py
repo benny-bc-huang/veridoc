@@ -12,7 +12,7 @@ import aiofiles
 import asyncio
 
 from .security import SecurityManager
-from models.api_models import FileItem, FileContentResponse, FileMetadata, PaginationInfo
+from ..models.api_models import FileItem, FileContentResponse, FileMetadata, PaginationInfo
 
 class FileHandler:
     """Handles file system operations with security validation"""
