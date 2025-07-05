@@ -56,11 +56,18 @@ VeriDoc is an AI-optimized documentation browser designed for rapid development 
 - **FastAPI Lifespan**: Migrated from deprecated @app.on_event to lifespan context
 
 ### **🏆 ACHIEVEMENT COMPLETE - 100% Unit Test Pass Rate!** 🎯
-- **Current Status**: ✅ **100% passing (70/70 unit tests)** - **🎉 GOAL ACHIEVED! 🎉**
+- **Current Status**: ✅ **100% passing (71/71 unit tests)** - **🎉 GOAL ACHIEVED! 🎉**
 - **SecurityManager**: ✅ 100% passing (26/26) - Exception-based validation API fully working
 - **FileHandler**: ✅ 100% passing (21/21) - All security and error handling fixes applied
 - **GitIntegration**: ✅ 100% passing (23/23) - **COMPLETED** - All edge cases and async issues resolved
 - **Integration Tests**: ⚠️ Gracefully handled with dependency compatibility skip mechanism
+
+### **📦 RECENT MILESTONE - Package Structure Test Suite Update** ✅
+- **Target**: Adapt entire test suite to new `veridoc/` package structure while maintaining 100% coverage
+- **Achievement**: ✅ **71/71 tests passing** - All imports updated from `core.*` to `veridoc.core.*`
+- **Package Migration**: Test fixtures, conftest.py, and all unit tests successfully migrated
+- **Compatibility**: Maintained backward compatibility with `app.py` development entry point
+- **Validation**: Pip installation and CLI functionality fully tested and working
 
 ## Architecture
 ```
@@ -85,14 +92,19 @@ python app.py             # Opens at http://localhost:5000
 
 # Project structure
 /root/veridoc/
-├── veridoc               # Executable CLI script
-├── app.py                # Main FastAPI server
-├── core/                 # Backend modules (security, search, performance, etc.)
-├── frontend/             # Web application
-├── tests/                # Comprehensive test suite
+├── veridoc_cli_script    # Legacy CLI script (renamed)
+├── app.py                # Development FastAPI server entry point
+├── veridoc/              # Main Python package
+│   ├── __init__.py       # Package initialization
+│   ├── cli.py            # CLI implementation
+│   ├── server.py         # FastAPI server
+│   ├── core/             # Backend modules (security, search, performance, etc.)
+│   ├── models/           # Data models and API schemas
+│   └── frontend/         # Web application assets
+├── tests/                # Comprehensive test suite (71/71 passing)
 ├── completions/          # Shell completion scripts
 ├── CLAUDE.md            # Claude Code instructions
-├── pyproject.toml       # Project configuration
+├── pyproject.toml       # Project configuration with entry points
 └── CHANGELOG.md         # Version history
 ```
 
@@ -164,7 +176,7 @@ git push origin main                   # Push to GitHub
 - Complete Python package structure (veridoc/)
 - Full pip installation functionality  
 - User-focused documentation (README.md + DEVELOPMENT.md)
-- 100% unit test coverage (70/70 tests passing)
+- 100% unit test coverage (71/71 tests passing)
 - Clean directory organization and comprehensive documentation
 
 ## Key Files to Know
@@ -301,8 +313,9 @@ Ctrl+`             # Toggle terminal panel (working)
 - **SecurityManager**: ✅ 100% passing (26/26) - Exception-based API fully working
 - **FileHandler**: ✅ 100% passing (21/21) - All malicious path and error handling fixed
 - **GitIntegration**: ✅ 100% passing (23/23) - All method signatures, edge cases, and async issues resolved
+- **Package Migration**: ✅ 100% passing - All tests updated for new `veridoc/` package structure
 - **Integration**: ⚠️ Gracefully handled with dependency compatibility considerations
-- **OVERALL**: ✅ **100% passing (70/70 unit tests)** - **🎉 TARGET ACHIEVED! 🎉**
+- **OVERALL**: ✅ **100% passing (71/71 unit tests)** - **🎉 TARGET ACHIEVED! 🎉**
 
 ### 📋 **Recent Fixes Applied**
 - ✅ SecurityManager tests: 100% passing with exception-based validation
@@ -311,6 +324,9 @@ Ctrl+`             # Toggle terminal panel (working)
 - ✅ FastAPI lifespan context manager (deprecated @app.on_event removed)
 - ✅ Empty path parameter validation in `/api/files` endpoint
 - ✅ Type conversion for health endpoint (float → int for memory/uptime)
+- ✅ **Package Structure Migration**: All 71 tests updated for new `veridoc/` package imports
+- ✅ **Test Fixture Updates**: Conftest.py and all test files migrated to package structure
+- ✅ **Pip Installation**: Fully functional `pip install .` with entry points working
 
 ### ✅ **MAJOR FIXES COMPLETED**
 1. **FileHandler Tests** - **COMPLETED** ✅:
