@@ -59,13 +59,16 @@ class FileHandler:
         Returns:
             List of FileItem objects
         """
-        if not dir_path.is_dir():
+        # Validate path security first
+        validated_path = self.security.validate_path(dir_path)
+        
+        if not validated_path.is_dir():
             raise ValueError("Path is not a directory")
         
         items = []
         
         try:
-            for item_path in dir_path.iterdir():
+            for item_path in validated_path.iterdir():
                 # Skip hidden files unless requested
                 if not include_hidden and item_path.name.startswith('.'):
                     continue
@@ -141,14 +144,20 @@ class FileHandler:
         Returns:
             FileContentResponse with content and metadata
         """
-        if not file_path.is_file():
+        # Validate path security first
+        validated_path = self.security.validate_path(file_path)
+        
+        if not validated_path.exists():
+            raise FileNotFoundError("File not found")
+        
+        if not validated_path.is_file():
             raise ValueError("Path is not a file")
         
         # Get file metadata
-        stat = file_path.stat()
+        stat = validated_path.stat()
         
         # Read file content
-        async with aiofiles.open(file_path, 'r', encoding=encoding) as f:
+        async with aiofiles.open(validated_path, 'r', encoding=encoding) as f:
             lines = await f.readlines()
         
         total_lines = len(lines)
@@ -166,8 +175,8 @@ class FileHandler:
         metadata = FileMetadata(
             size=stat.st_size,
             modified=datetime.fromtimestamp(stat.st_mtime),
-            extension=file_path.suffix.lower() if file_path.suffix else None,
-            mime_type=mimetypes.guess_type(str(file_path))[0] or "text/plain",
+            extension=validated_path.suffix.lower() if validated_path.suffix else None,
+            mime_type=mimetypes.guess_type(str(validated_path))[0] or "text/plain",
             encoding=encoding,
             line_count=total_lines
         )
@@ -183,7 +192,7 @@ class FileHandler:
         )
         
         return FileContentResponse(
-            path=str(file_path.relative_to(self.security.base_path)),
+            path=str(validated_path.relative_to(self.security.base_path)),
             content=content,
             metadata=metadata,
             pagination=pagination
@@ -199,29 +208,32 @@ class FileHandler:
         Returns:
             Dictionary with file metadata
         """
-        if not file_path.exists():
+        # Validate path security first
+        validated_path = self.security.validate_path(file_path)
+        
+        if not validated_path.exists():
             raise FileNotFoundError("File not found")
         
-        stat = file_path.stat()
+        stat = validated_path.stat()
         
         metadata = {
-            "path": str(file_path.relative_to(self.security.base_path)),
-            "name": file_path.name,
-            "type": "file" if file_path.is_file() else "directory",
+            "path": str(validated_path.relative_to(self.security.base_path)),
+            "name": validated_path.name,
+            "type": "file" if validated_path.is_file() else "directory",
             "size": stat.st_size,
             "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
             "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
-            "extension": file_path.suffix.lower() if file_path.suffix else None,
-            "mime_type": mimetypes.guess_type(str(file_path))[0] if file_path.is_file() else None,
-            "is_readable": os.access(file_path, os.R_OK),
-            "is_writable": os.access(file_path, os.W_OK),
+            "extension": validated_path.suffix.lower() if validated_path.suffix else None,
+            "mime_type": mimetypes.guess_type(str(validated_path))[0] if validated_path.is_file() else None,
+            "is_readable": os.access(validated_path, os.R_OK),
+            "is_writable": os.access(validated_path, os.W_OK),
             "permissions": oct(stat.st_mode)[-3:]
         }
         
         # Add line count for text files
-        if file_path.is_file() and self._is_text_file(file_path):
+        if validated_path.is_file() and self._is_text_file(validated_path):
             try:
-                async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
+                async with aiofiles.open(validated_path, 'r', encoding='utf-8') as f:
                     lines = await f.readlines()
                     metadata["line_count"] = len(lines)
             except (UnicodeDecodeError, PermissionError):

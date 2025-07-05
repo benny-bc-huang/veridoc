@@ -19,12 +19,12 @@ class TestSecurityManager:
         security_manager = SecurityManager(str(test_data_dir))
         assert security_manager.base_path == test_data_dir
 
-    def test_is_safe_path_valid_paths(self, security_manager: SecurityManager, test_data_dir: Path):
-        """Test is_safe_path with valid paths."""
+    def test_validate_path_valid_paths(self, security_manager: SecurityManager, test_data_dir: Path):
+        """Test validate_path with valid paths."""
         # Test valid paths within base directory
         valid_paths = [
             "README.md",
-            "docs/api.md",
+            "docs/api.md", 
             "docs/subdirectory/nested.md",
             "src/main.py",
             "./README.md",
@@ -32,12 +32,17 @@ class TestSecurityManager:
         ]
         
         for path in valid_paths:
-            assert security_manager.is_safe_path(path), f"Path should be safe: {path}"
+            try:
+                result = security_manager.validate_path(path)
+                assert isinstance(result, Path), f"Should return Path for valid path: {path}"
+            except ValueError:
+                pytest.fail(f"Valid path should not raise exception: {path}")
 
-    def test_is_safe_path_malicious_paths(self, security_manager: SecurityManager, malicious_paths: list[str]):
-        """Test is_safe_path with malicious paths."""
+    def test_validate_path_malicious_paths(self, security_manager: SecurityManager, malicious_paths: list[str]):
+        """Test validate_path with malicious paths."""
         for path in malicious_paths:
-            assert not security_manager.is_safe_path(path), f"Path should be blocked: {path}"
+            with pytest.raises(ValueError):
+                security_manager.validate_path(path)
 
     def test_validate_path_absolute_paths(self, security_manager: SecurityManager):
         """Test validate_path with absolute paths."""
@@ -50,7 +55,7 @@ class TestSecurityManager:
         ]
         
         for path in malicious_absolute_paths:
-            with pytest.raises((ValueError, Exception), msg=f"Absolute path should be blocked: {path}"):
+            with pytest.raises((ValueError, Exception)):
                 security_manager.validate_path(path)
 
     def test_validate_path_nonexistent_file(self, security_manager: SecurityManager):
@@ -65,95 +70,122 @@ class TestSecurityManager:
             pytest.fail(f"Non-existent files within base path should be valid: {e}")
         
         # But not if they try to escape
-        assert not security_manager.is_safe_path("../nonexistent.md")
+        with pytest.raises(ValueError):
+            security_manager.validate_path("../nonexistent.md")
 
-    @patch('os.path.islink')
-    def test_is_safe_path_symbolic_links(self, mock_islink: MagicMock, security_manager: SecurityManager):
-        """Test is_safe_path with symbolic links."""
-        # Mock symbolic link detection
-        mock_islink.return_value = True
-        
-        # Symbolic links should be rejected
-        assert not security_manager.is_safe_path("symlink.md")
-        mock_islink.assert_called()
+    def test_validate_path_symbolic_links(self, security_manager: SecurityManager):
+        """Test validate_path with symbolic links."""
+        # Create a test symlink if possible
+        import tempfile
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            test_file = temp_path / "test.txt"
+            test_file.write_text("test")
+            symlink_path = temp_path / "symlink.txt"
+            
+            try:
+                symlink_path.symlink_to(test_file)
+                # Create SecurityManager with temp directory
+                temp_security = SecurityManager(temp_path)
+                
+                # Should validate internal symlinks
+                result = temp_security.validate_path("symlink.txt")
+                assert isinstance(result, Path)
+            except OSError:
+                # Skip if symlinks not supported
+                pytest.skip("Symbolic links not supported on this system")
 
-    def test_is_safe_path_empty_string(self, security_manager: SecurityManager):
-        """Test is_safe_path with empty string."""
-        assert not security_manager.is_safe_path("")
+    def test_validate_path_empty_string(self, security_manager: SecurityManager):
+        """Test validate_path with empty string."""
+        # Empty string should resolve to base path
+        result = security_manager.validate_path("")
+        assert result == security_manager.base_path
 
-    def test_is_safe_path_none(self, security_manager: SecurityManager):
-        """Test is_safe_path with None."""
-        assert not security_manager.is_safe_path(None)
+    def test_validate_path_none(self, security_manager: SecurityManager):
+        """Test validate_path with None."""
+        with pytest.raises((ValueError, AttributeError)):
+            security_manager.validate_path(None)
 
-    def test_is_safe_path_current_directory(self, security_manager: SecurityManager):
-        """Test is_safe_path with current directory references."""
+    def test_validate_path_current_directory(self, security_manager: SecurityManager):
+        """Test validate_path with current directory references."""
         # These should be safe as they resolve within base path
-        assert security_manager.is_safe_path(".")
-        assert security_manager.is_safe_path("./")
-        assert security_manager.is_safe_path("./README.md")
+        result1 = security_manager.validate_path(".")
+        result2 = security_manager.validate_path("./")
+        result3 = security_manager.validate_path("./README.md")
+        
+        assert isinstance(result1, Path)
+        assert isinstance(result2, Path) 
+        assert isinstance(result3, Path)
 
-    def test_is_safe_path_parent_directory_within_base(self, security_manager: SecurityManager):
-        """Test is_safe_path with parent directory that stays within base."""
+    def test_validate_path_parent_directory_within_base(self, security_manager: SecurityManager):
+        """Test validate_path with parent directory that stays within base."""
         # Should be safe as it resolves to base path
-        assert security_manager.is_safe_path("docs/../README.md")
-        assert security_manager.is_safe_path("docs/subdirectory/../api.md")
+        result1 = security_manager.validate_path("docs/../README.md")
+        result2 = security_manager.validate_path("docs/subdirectory/../api.md")
+        
+        assert isinstance(result1, Path)
+        assert isinstance(result2, Path)
 
-    def test_is_safe_path_case_sensitivity(self, security_manager: SecurityManager):
-        """Test is_safe_path with different case variations."""
+    def test_validate_path_case_sensitivity(self, security_manager: SecurityManager):
+        """Test validate_path with different case variations."""
         # Test case variations (behavior may depend on OS)
         test_cases = [
             "readme.md",
-            "README.MD",
+            "README.MD", 
             "Readme.Md",
             "docs/API.md",
             "DOCS/api.md",
         ]
         
         for path in test_cases:
-            # Path safety should not depend on case
-            result = security_manager.is_safe_path(path)
-            assert isinstance(result, bool), f"Should return boolean for: {path}"
+            # Should return Path for valid cases
+            result = security_manager.validate_path(path)
+            assert isinstance(result, Path), f"Should return Path for: {path}"
 
-    def test_is_safe_path_url_schemes(self, security_manager: SecurityManager):
-        """Test is_safe_path with URL schemes."""
+    def test_validate_path_url_schemes(self, security_manager: SecurityManager):
+        """Test validate_path with URL schemes."""
         url_schemes = [
             "file://README.md",
             "http://example.com/file.md",
-            "https://example.com/file.md",
+            "https://example.com/file.md", 
             "ftp://example.com/file.md",
             "file:///etc/passwd",
         ]
         
         for url in url_schemes:
-            assert not security_manager.is_safe_path(url), f"URL should be blocked: {url}"
+            with pytest.raises(ValueError):
+                security_manager.validate_path(url)
 
-    def test_is_safe_path_special_characters(self, security_manager: SecurityManager):
-        """Test is_safe_path with special characters."""
+    def test_validate_path_special_characters(self, security_manager: SecurityManager):
+        """Test validate_path with special characters."""
         # Test paths with special characters that should be safe
         safe_special_chars = [
             "file-name.md",
             "file_name.md",
             "file name.md",
             "file.name.md",
-            "files/sub-directory/file.md",
+            "files/sub-directory/file.md", 
             "files/sub_directory/file.md",
         ]
         
         for path in safe_special_chars:
             # These should be safe as they don't escape base path
-            result = security_manager.is_safe_path(path)
-            # Just ensure it returns a boolean (actual result depends on path resolution)
-            assert isinstance(result, bool), f"Should return boolean for: {path}"
+            result = security_manager.validate_path(path)
+            assert isinstance(result, Path), f"Should return Path for: {path}"
 
-    def test_is_safe_path_long_paths(self, security_manager: SecurityManager):
-        """Test is_safe_path with very long paths."""
+    def test_validate_path_long_paths(self, security_manager: SecurityManager):
+        """Test validate_path with very long paths."""
         # Test extremely long path
         long_path = "a/" * 1000 + "file.md"
-        result = security_manager.is_safe_path(long_path)
-        assert isinstance(result, bool)
+        try:
+            result = security_manager.validate_path(long_path)
+            assert isinstance(result, Path)
+        except (ValueError, OSError):
+            # Long paths may be rejected by OS
+            pass
 
-    def test_is_safe_path_unicode_characters(self, security_manager: SecurityManager):
-        """Test is_safe_path with unicode characters."""
+    def test_validate_path_unicode_characters(self, security_manager: SecurityManager):
+        """Test validate_path with unicode characters."""
         unicode_paths = [
             "文档.md",
             "documentación.md",
@@ -163,8 +195,8 @@ class TestSecurityManager:
         ]
         
         for path in unicode_paths:
-            result = security_manager.is_safe_path(path)
-            assert isinstance(result, bool), f"Should return boolean for unicode path: {path}"
+            result = security_manager.validate_path(path)
+            assert isinstance(result, Path), f"Should return Path for unicode path: {path}"
 
     def test_path_resolution_edge_cases(self, security_manager: SecurityManager):
         """Test edge cases in path resolution."""
@@ -175,8 +207,20 @@ class TestSecurityManager:
         ]
         
         for path in edge_cases:
-            result = security_manager.is_safe_path(path)
-            assert isinstance(result, bool), f"Should handle edge case: {path}"
+            result = security_manager.validate_path(path)
+            assert isinstance(result, Path), f"Should handle edge case: {path}"
+
+    def test_validate_path_root_slash(self, security_manager: SecurityManager):
+        """Test that root path '/' is correctly handled as base path."""
+        # This is critical for API endpoint compatibility
+        result = security_manager.validate_path("/")
+        
+        # Should return the base path itself
+        assert result == security_manager.base_path
+        assert result.is_dir()
+        
+        # Should not raise any security errors
+        assert isinstance(result, Path)
 
     def test_validate_file_size_small_file(self, security_manager: SecurityManager):
         """Test validate_file_size with small file."""

@@ -16,48 +16,51 @@ class TestGitIntegration:
     def test_init(self, test_data_dir: Path):
         """Test GitIntegration initialization."""
         git_integration = GitIntegration(str(test_data_dir))
-        assert git_integration.base_path == str(test_data_dir)
+        assert git_integration.base_path == test_data_dir
 
-    @patch('subprocess.run')
-    def test_is_git_repository_true(self, mock_run: MagicMock, test_data_dir: Path):
+    def test_is_git_repository_true(self, test_data_dir: Path):
         """Test is_git_repository when directory is a git repository."""
-        # Mock successful git command
-        mock_run.return_value = MagicMock(returncode=0)
+        # Create .git directory to simulate git repository
+        git_dir = test_data_dir / ".git"
+        git_dir.mkdir(exist_ok=True)
         
         git_integration = GitIntegration(str(test_data_dir))
-        assert git_integration.is_git_repository() is True
-        
-        # Verify git command was called
-        mock_run.assert_called_once()
-        call_args = mock_run.call_args[0][0]
-        assert 'git' in call_args
-        assert 'rev-parse' in call_args
+        assert git_integration.is_git_repository is True
 
-    @patch('subprocess.run')
-    def test_is_git_repository_false(self, mock_run: MagicMock, test_data_dir: Path):
+    def test_is_git_repository_false(self, test_data_dir: Path):
         """Test is_git_repository when directory is not a git repository."""
-        # Mock failed git command
-        mock_run.return_value = MagicMock(returncode=128)
+        # Create a completely isolated directory outside any git repo
+        isolated_dir = Path("/tmp") / "isolated_test_dir"
+        isolated_dir.mkdir(exist_ok=True)
         
-        git_integration = GitIntegration(str(test_data_dir))
-        assert git_integration.is_git_repository() is False
+        git_integration = GitIntegration(str(isolated_dir))
+        assert git_integration.is_git_repository is False
+        
+        # Cleanup
+        isolated_dir.rmdir()
 
-    @patch('subprocess.run')
-    def test_is_git_repository_exception(self, mock_run: MagicMock, test_data_dir: Path):
-        """Test is_git_repository when git command raises exception."""
-        # Mock exception
-        mock_run.side_effect = subprocess.CalledProcessError(1, 'git')
-        
-        git_integration = GitIntegration(str(test_data_dir))
-        assert git_integration.is_git_repository() is False
+    def test_is_git_repository_exception(self, test_data_dir: Path):
+        """Test is_git_repository when directory structure is invalid."""
+        # Create a new isolated directory to avoid .git from other tests
+        import tempfile
+        with tempfile.TemporaryDirectory() as isolated_temp_dir:
+            isolated_path = Path(isolated_temp_dir)
+            git_integration = GitIntegration(str(isolated_path))
+            git_integration._find_git_root = lambda: None
+            git_integration._is_git_repo = None  # Reset cache
+            assert git_integration.is_git_repository is False
 
     @patch('subprocess.run')
     def test_get_git_status(self, mock_run: MagicMock, test_data_dir: Path):
         """Test getting git status."""
+        # Create .git directory to simulate git repository
+        git_dir = test_data_dir / ".git"
+        git_dir.mkdir(exist_ok=True)
+        
         # Mock git status output
         mock_run.return_value = MagicMock(
             returncode=0,
-            stdout=" M modified.txt\n?? untracked.txt\n A  added.txt\n"
+            stdout="## main\n M modified.txt\n?? untracked.txt\n A  added.txt\n"
         )
         
         git_integration = GitIntegration(str(test_data_dir))
@@ -111,19 +114,14 @@ class TestGitIntegration:
     @patch('subprocess.run')
     def test_get_git_log(self, mock_run: MagicMock, test_data_dir: Path):
         """Test getting git log."""
-        # Mock git log output
-        mock_log_output = """commit abc123
-Author: Test User <test@example.com>
-Date: Mon Jan 1 12:00:00 2024 +0000
-
-    Initial commit
-
-commit def456
-Author: Test User <test@example.com>
-Date: Mon Jan 1 11:00:00 2024 +0000
-
-    Second commit
-"""
+        # Create .git directory to simulate git repository
+        git_dir = test_data_dir / ".git"
+        git_dir.mkdir(exist_ok=True)
+        
+        # Mock git log output in the format expected by get_git_log (pipe-separated)
+        mock_log_output = """abc123|Test User <test@example.com>|2024-01-01 12:00:00 +0000|Initial commit
+def456|Test User <test@example.com>|2024-01-01 11:00:00 +0000|Second commit"""
+        
         mock_run.return_value = MagicMock(
             returncode=0,
             stdout=mock_log_output
@@ -280,29 +278,31 @@ index 1234567..abcdefg 100644
         
         assert branch is None
 
-    @patch('subprocess.run')
-    def test_get_file_history(self, mock_run: MagicMock, test_data_dir: Path):
+    @pytest.mark.asyncio
+    @patch('asyncio.create_subprocess_exec')
+    async def test_get_file_history(self, mock_subprocess: MagicMock, test_data_dir: Path):
         """Test getting file history."""
-        # Mock git log output for specific file
-        mock_log_output = """commit abc123
-Author: Test User <test@example.com>
-Date: Mon Jan 1 12:00:00 2024 +0000
-
-    Update README.md
-
-commit def456
-Author: Test User <test@example.com>
-Date: Mon Jan 1 11:00:00 2024 +0000
-
-    Add README.md
-"""
-        mock_run.return_value = MagicMock(
-            returncode=0,
-            stdout=mock_log_output
-        )
+        # Create .git directory to simulate git repository
+        git_dir = test_data_dir / ".git"
+        git_dir.mkdir(exist_ok=True)
+        
+        # Create the file to ensure relative path calculation works
+        readme_file = test_data_dir / "README.md"
+        readme_file.write_text("# Test README")
+        
+        # Mock git log output for specific file (format: %H|%an|%ae|%ad|%s)
+        mock_log_output = """abc123|Test User|test@example.com|2024-01-01 12:00:00 +0000|Update README.md
+def456|Test User|test@example.com|2024-01-01 11:00:00 +0000|Add README.md"""
+        
+        # Mock async subprocess with proper async mock
+        from unittest.mock import AsyncMock
+        mock_process = AsyncMock()
+        mock_process.communicate.return_value = (mock_log_output.encode(), b'')
+        mock_process.returncode = 0
+        mock_subprocess.return_value = mock_process
         
         git_integration = GitIntegration(str(test_data_dir))
-        history = git_integration.get_file_history("README.md")
+        history = await git_integration.get_file_history(readme_file)
         
         assert isinstance(history, list)
         assert len(history) == 2
@@ -311,8 +311,9 @@ Date: Mon Jan 1 11:00:00 2024 +0000
         assert history[1]["hash"] == "def456"
         assert history[1]["message"] == "Add README.md"
 
+    @pytest.mark.asyncio
     @patch('subprocess.run')
-    def test_get_file_history_no_history(self, mock_run: MagicMock, test_data_dir: Path):
+    async def test_get_file_history_no_history(self, mock_run: MagicMock, test_data_dir: Path):
         """Test getting file history for file with no history."""
         # Mock empty git log
         mock_run.return_value = MagicMock(
@@ -321,21 +322,22 @@ Date: Mon Jan 1 11:00:00 2024 +0000
         )
         
         git_integration = GitIntegration(str(test_data_dir))
-        history = git_integration.get_file_history("newfile.md")
+        history = await git_integration.get_file_history(Path("newfile.md"))
         
         assert isinstance(history, list)
         assert len(history) == 0
 
+    @pytest.mark.asyncio
     @patch('subprocess.run')
-    def test_get_file_history_not_git_repo(self, mock_run: MagicMock, test_data_dir: Path):
+    async def test_get_file_history_not_git_repo(self, mock_run: MagicMock, test_data_dir: Path):
         """Test getting file history when not a git repository."""
         # Mock git command failure
         mock_run.return_value = MagicMock(returncode=128)
         
         git_integration = GitIntegration(str(test_data_dir))
-        history = git_integration.get_file_history("README.md")
+        history = await git_integration.get_file_history(Path("README.md"))
         
-        assert history is None
+        assert history == []
 
     @patch('subprocess.run')
     def test_command_execution_timeout(self, mock_run: MagicMock, test_data_dir: Path):

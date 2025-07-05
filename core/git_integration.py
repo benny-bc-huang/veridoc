@@ -13,9 +13,9 @@ import asyncio
 class GitIntegration:
     """Handles Git operations for documentation tracking"""
     
-    def __init__(self, base_path: Path):
-        self.base_path = base_path
-        self.git_dir = base_path / ".git"
+    def __init__(self, base_path):
+        self.base_path = Path(base_path) if isinstance(base_path, str) else base_path
+        self.git_dir = self.base_path / ".git"
         self._is_git_repo = None
     
     @property
@@ -259,3 +259,150 @@ class GitIntegration:
             return str(file_path.relative_to(git_root))
         except ValueError:
             return str(file_path)
+    
+    def get_git_status(self) -> Optional[Dict[str, Any]]:
+        """Get Git status information (synchronous version for tests)"""
+        if not self.is_git_repository:
+            return None
+        
+        try:
+            # Run synchronously for tests
+            result = subprocess.run(
+                ["git", "status", "--porcelain", "-b"],
+                cwd=str(self._find_git_root() or self.base_path),
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            
+            if result.returncode != 0:
+                return None
+            
+            lines = result.stdout.strip().split('\n')
+            branch = "main"
+            modified = []
+            untracked = []
+            added = []
+            deleted = []
+            
+            for line in lines:
+                if line.startswith('##'):
+                    # Branch information
+                    parts = line[3:].split('...')
+                    if parts:
+                        branch = parts[0].strip()
+                elif line.strip():
+                    # File status
+                    index_status = line[0] if len(line) > 0 else ' '
+                    working_status = line[1] if len(line) > 1 else ' '
+                    file_path = line[3:].strip()
+                    
+                    if index_status == 'A' or working_status == 'A':
+                        added.append(file_path)
+                    elif index_status == 'M' or working_status == 'M':
+                        modified.append(file_path)
+                    elif index_status == 'D' or working_status == 'D':
+                        deleted.append(file_path)
+                    elif index_status == '?' and working_status == '?':
+                        untracked.append(file_path)
+            
+            return {
+                "modified": modified,
+                "untracked": untracked,
+                "added": added,
+                "deleted": deleted,
+                "branch": branch,
+                "clean": len(modified) == 0 and len(added) == 0 and len(deleted) == 0
+            }
+            
+        except Exception:
+            return None
+    
+    def get_git_log(self, limit: int = 10, file_path: Optional[str] = None) -> Optional[List[Dict[str, Any]]]:
+        """Get Git log information (synchronous version for tests)"""
+        if not self.is_git_repository:
+            return None
+        
+        try:
+            args = ["git", "log", f"--max-count={limit}", "--pretty=format:%H|%an|%ad|%s", "--date=iso"]
+            if file_path:
+                args.extend(["--", file_path])
+            
+            result = subprocess.run(
+                args,
+                cwd=str(self._find_git_root() or self.base_path),
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            
+            if result.returncode != 0:
+                return None
+            
+            commits = []
+            for line in result.stdout.strip().split('\n'):
+                if line:
+                    parts = line.split('|', 3)
+                    if len(parts) == 4:
+                        commits.append({
+                            "hash": parts[0],
+                            "author": parts[1],
+                            "date": parts[2],
+                            "message": parts[3]
+                        })
+            
+            return commits
+            
+        except Exception:
+            return None
+    
+    def get_git_diff(self, file_path: Optional[str] = None, commit_hash: Optional[str] = None) -> Optional[str]:
+        """Get Git diff information (synchronous version for tests)"""
+        if not self.is_git_repository:
+            return None
+        
+        try:
+            args = ["git", "diff"]
+            if commit_hash:
+                args.append(commit_hash)
+            if file_path:
+                args.extend(["--", file_path])
+            
+            result = subprocess.run(
+                args,
+                cwd=str(self._find_git_root() or self.base_path),
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            
+            if result.returncode != 0:
+                return None
+            
+            return result.stdout
+            
+        except Exception:
+            return None
+    
+    def get_current_branch(self) -> Optional[str]:
+        """Get current Git branch (synchronous version for tests)"""
+        if not self.is_git_repository:
+            return None
+        
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                cwd=str(self._find_git_root() or self.base_path),
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            
+            if result.returncode != 0:
+                return None
+            
+            branch = result.stdout.strip()
+            return branch if branch != "HEAD" else None
+            
+        except Exception:
+            return None

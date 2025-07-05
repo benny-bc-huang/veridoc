@@ -34,12 +34,56 @@ class SecurityManager:
             ValueError: If path is invalid or outside base path
             SecurityError: If path traversal attempt detected
         """
-        # Remove leading slashes and normalize
-        user_path = user_path.strip("/")
-
+        if user_path is None:
+            raise ValueError("Path cannot be None")
+        
+        # Convert Path objects to strings
+        if hasattr(user_path, '__fspath__'):  # Path-like object
+            user_path = str(user_path)
+        
+        # Handle empty string as base path
+        if user_path == "":
+            return self.base_path
+        
+        # Check for URL schemes
+        if "://" in user_path:
+            raise ValueError("URLs not allowed in path")
+        
+        # Check for Windows absolute paths
+        if len(user_path) >= 2 and user_path[1] == ':':
+            raise ValueError("Windows absolute paths not allowed")
+        
+        # Check for Unix absolute paths
+        if user_path.startswith('/'):
+            # Special case: "/" means root of our base path
+            if user_path == "/":
+                return self.base_path
+            
+            # Allow absolute paths if they're within our base path
+            try:
+                abs_path = Path(user_path).resolve()
+                # Try to get relative path to base_path
+                rel_path = abs_path.relative_to(self.base_path.resolve())
+                user_path = str(rel_path)
+            except ValueError:
+                # Path is not within base path
+                raise ValueError("Absolute paths outside base directory not allowed")
+        
+        # Check for UNC paths (Windows network paths)
+        if user_path.startswith('\\\\') or user_path.startswith('//'):
+            raise ValueError("UNC paths not allowed")
+            
         # Check for null bytes
         if "\x00" in user_path:
             raise ValueError("Null bytes not allowed in path")
+
+        # Check for dangerous parent directory traversal
+        normalized = os.path.normpath(user_path)
+        if normalized.startswith('..') or '/../' in normalized or normalized == '..':
+            raise ValueError("Path traversal not allowed")
+
+        # Remove leading slashes and normalize (after security checks)
+        user_path = user_path.strip("/")
 
         # Construct full path
         try:
@@ -121,3 +165,57 @@ class SecurityManager:
             return False
 
         return True
+
+    def validate_file_size(self, size_bytes: int) -> bool:
+        """
+        Validate file size is within limits.
+
+        Args:
+            size_bytes: File size in bytes
+
+        Returns:
+            True if size is acceptable
+        """
+        if size_bytes < 0:
+            return False
+        
+        # Default limit: 50MB
+        max_size = 50 * 1024 * 1024
+        return size_bytes <= max_size
+
+    def validate_file_extension(self, filename: str) -> bool:
+        """
+        Validate file extension is allowed.
+
+        Args:
+            filename: Filename to check
+
+        Returns:
+            True if extension is allowed
+        """
+        if not filename:
+            return False
+        
+        if filename is None:
+            return False
+            
+        # Extract extension
+        if '.' not in filename:
+            # Files without extension (README, Makefile, etc.)
+            return True
+            
+        ext = Path(filename).suffix.lower()
+        
+        # Allowed extensions
+        allowed_extensions = {
+            '.md', '.txt', '.py', '.js', '.json', '.yaml', '.yml', 
+            '.html', '.css', '.xml', '.rst', '.csv', '.toml',
+            '.ini', '.cfg', '.conf', '.sh', '.bat', '.ts', '.tsx',
+            '.jsx', '.vue', '.svelte', '.go', '.rs', '.cpp', '.c',
+            '.h', '.hpp', '.java', '.kt', '.swift', '.rb', '.php',
+            '.pl', '.r', '.scala', '.clj', '.hs', '.elm', '.dart',
+            '.lua', '.vim', '.sql', '.dockerfile', '.gitignore',
+            '.gitattributes', '.editorconfig'
+        }
+        
+        return ext in allowed_extensions

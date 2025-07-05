@@ -80,8 +80,8 @@ class TestFileHandler:
     async def test_list_files_malicious_path(self, file_handler: FileHandler):
         """Test listing files with malicious path."""
         malicious_path = Path("../../../etc")
-        # SecurityManager should prevent this, but test with ValueError for non-directory
-        with pytest.raises((PermissionError, ValueError)):
+        # SecurityManager should prevent path traversal
+        with pytest.raises(ValueError, match="Path traversal not allowed"):
             await file_handler.list_directory(malicious_path)
 
     @pytest.mark.asyncio
@@ -128,7 +128,8 @@ class TestFileHandler:
     async def test_read_file_malicious_path(self, file_handler: FileHandler):
         """Test reading file with malicious path."""
         malicious_path = Path("../../../etc/passwd")
-        with pytest.raises((PermissionError, FileNotFoundError)):
+        # SecurityManager should prevent path traversal
+        with pytest.raises(ValueError, match="Path traversal not allowed"):
             await file_handler.get_file_content(malicious_path)
 
     @pytest.mark.asyncio
@@ -140,15 +141,23 @@ class TestFileHandler:
 
     @pytest.mark.asyncio
     async def test_read_file_large_file(self, file_handler: FileHandler, test_data_dir: Path):
-        """Test reading large file."""
+        """Test reading large file with pagination."""
         file_path = test_data_dir / "large_file.txt"
         content_response = await file_handler.get_file_content(file_path)
         
         assert hasattr(content_response, 'content')
         lines = content_response.content.strip().split('\n')
-        assert len(lines) == 2000
+        # Should return 1000 lines per page (default pagination)
+        assert len(lines) == 1000
         assert lines[0] == "Line 1"
-        assert lines[-1] == "Line 2000"
+        assert lines[-1] == "Line 1000"
+        
+        # Test pagination metadata
+        assert content_response.pagination.total_lines == 2000
+        assert content_response.pagination.total_pages == 2
+        assert content_response.pagination.page == 1
+        assert content_response.pagination.has_next == True
+        assert content_response.pagination.has_previous == False
 
     @pytest.mark.asyncio
     async def test_get_file_info_file(self, file_handler: FileHandler, test_data_dir: Path):
@@ -187,7 +196,8 @@ class TestFileHandler:
     async def test_get_file_info_malicious_path(self, file_handler: FileHandler):
         """Test getting file info with malicious path."""
         malicious_path = Path("../../../etc/passwd")
-        with pytest.raises((PermissionError, FileNotFoundError)):
+        # SecurityManager should prevent path traversal
+        with pytest.raises(ValueError, match="Path traversal not allowed"):
             await file_handler.get_file_metadata(malicious_path)
 
     # Search functionality moved to OptimizedSearchEngine in Phase 4
