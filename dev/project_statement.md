@@ -1,5 +1,9 @@
 # VeriDoc: AI-Optimized Documentation Verification for Rapid Development
 
+<div align="center">
+  <img src="../veridoc/frontend/logo.png" alt="VeriDoc Logo" width="100" height="100">
+</div>
+
 *An open-source documentation browser designed specifically for AI-assisted development workflows*
 
 ## Problem Statement

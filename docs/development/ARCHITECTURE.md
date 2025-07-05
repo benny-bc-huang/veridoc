@@ -1,5 +1,9 @@
 # VeriDoc Architecture Specification
 
+<div align="center">
+  <img src="../../veridoc/frontend/logo.png" alt="VeriDoc Logo" width="80" height="80">
+</div>
+
 ## System Overview
 
 VeriDoc is a lightweight, web-based documentation browser designed for AI-assisted development workflows. The architecture prioritizes performance, security, and simplicity.

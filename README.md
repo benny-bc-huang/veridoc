@@ -1,6 +1,15 @@
-# VeriDoc
-
-**AI-Optimized Documentation Browser for Rapid Development**
+<div align="center">
+  <img src="veridoc/frontend/logo.png" alt="VeriDoc Logo" width="120" height="120">
+  
+  # VeriDoc
+  
+  **AI-Optimized Documentation Browser for Rapid Development**
+  
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+  [![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1+-green.svg)](https://fastapi.tiangolo.com/)
+  
+</div>
 
 VeriDoc is a lightweight, open-source documentation browser designed for AI-assisted development workflows. It provides sub-second documentation access to maintain flow state during rapid development cycles.
 
