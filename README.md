@@ -133,6 +133,22 @@ curl http://localhost:5000/api/git/status
 - **Browser**: Any modern browser for the web interface
 - **Memory**: Minimum 256MB available RAM
 
+## Project Structure
+
+```
+veridoc/
+├── veridoc/          # Main Python package
+│   ├── cli.py        # Command-line interface
+│   ├── server.py     # FastAPI web server
+│   ├── core/         # Backend modules (security, file handling, search)
+│   ├── models/       # API data models
+│   └── frontend/     # Web application (HTML, CSS, JavaScript)
+├── tests/            # Test suite (100% unit test coverage)
+├── docs/             # Documentation and specifications
+├── app.py            # Development server entry point
+└── README.md         # This file
+```
+
 ## Contributing
 
 We welcome contributions! See our [contributing guidelines](CONTRIBUTING.md) for details on:
