@@ -150,32 +150,79 @@ def test_client(test_data_dir: Path, monkeypatch) -> TestClient:
         })
     
     @test_app.get("/api/files")
-    @handle_async_api_error
     async def get_files(path: str = ""):
+        # Validate path - convert string to Path if needed
+        if isinstance(path, str):
+            if path == "" or path == "/":
+                path = test_data_dir
+            else:
+                path = test_data_dir / path
+        
+        # Check if path exists
+        if not path.exists():
+            raise HTTPException(status_code=404, detail="Path not found")
+        
         try:
             files = await file_handler.list_directory(path)
-            return [{"name": f.name, "type": "file" if f.is_file() else "directory", 
-                    "size": f.stat().st_size if f.is_file() else None} for f in files]
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+        except ValueError as e:
+            if "Path traversal" in str(e) or "outside base directory" in str(e):
+                raise HTTPException(status_code=403, detail="Access denied")
+            elif "not a directory" in str(e):
+                raise HTTPException(status_code=404, detail="Path not found")
+            else:
+                raise HTTPException(status_code=400, detail=str(e))
+        
+        # Convert FileItem objects to dict format expected by tests
+        file_items = []
+        for f in files:
+            file_items.append({
+                "name": f.name,
+                "type": f.type,  # FileItem already has type field
+                "size": f.size,
+                "modified": f.modified.isoformat() if f.modified else None
+            })
+        return file_items
     
-    @test_app.get("/api/file/content")
-    @handle_async_api_error
+    @test_app.get("/api/file_content")
     async def get_file_content(path: str, page: int = 1, lines_per_page: int = 1000):
+        # Convert string path to Path object
+        if isinstance(path, str):
+            path = test_data_dir / path
+        
+        # Check if file exists
+        if not path.exists():
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        # Check if it's a directory
+        if path.is_dir():
+            raise HTTPException(status_code=400, detail="Cannot read directory as file")
+        
         try:
             result = await file_handler.get_file_content(path, page, lines_per_page)
-            return result.dict()
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            
+            # Check if page is valid (if we got empty content for high page numbers)
+            if page > result.pagination.total_pages:
+                raise HTTPException(status_code=400, detail="Invalid page number")
+                
+            return result.model_dump()
+        except ValueError as e:
+            if "Path traversal" in str(e) or "outside base directory" in str(e):
+                raise HTTPException(status_code=403, detail="Access denied")
+            elif "not a file" in str(e):
+                raise HTTPException(status_code=400, detail="Cannot read directory as file")
+            else:
+                raise HTTPException(status_code=400, detail=str(e))
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail="File not found")
     
     @test_app.get("/api/search")
-    @handle_async_api_error
     async def search(q: str, type: str = "both", limit: int = 10):
-        try:
-            results = await search_engine.search(q, search_type=type, limit=limit)
-            return {"results": results, "total": len(results)}
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+        # Validate search type
+        if type not in ["filename", "content", "both"]:
+            raise HTTPException(status_code=422, detail="Invalid search type")
+        
+        results = await search_engine.search(q, search_type=type, limit=limit)
+        return results  # Return results directly to match test expectations
     
     # Create TestClient - handle compatibility issues with httpx 0.28.1 vs FastAPI 0.104.1
     try:

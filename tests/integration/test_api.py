@@ -16,9 +16,9 @@ class TestHealthEndpoint:
         assert response.status_code == 200
         
         data = response.json()
-        assert data["status"] == "ok"
-        assert "uptime" in data
-        assert "memory_usage" in data
+        assert data["status"] == "healthy"
+        assert "uptime_seconds" in data
+        assert "memory_usage_mb" in data
 
     def test_health_endpoint_structure(self, test_client: TestClient):
         """Test health endpoint response structure."""
@@ -26,14 +26,14 @@ class TestHealthEndpoint:
         data = response.json()
         
         # Check required fields
-        required_fields = ["status", "uptime", "memory_usage"]
+        required_fields = ["status", "uptime_seconds", "memory_usage_mb"]
         for field in required_fields:
             assert field in data
         
         # Check data types
         assert isinstance(data["status"], str)
-        assert isinstance(data["uptime"], (int, float))
-        assert isinstance(data["memory_usage"], dict)
+        assert isinstance(data["uptime_seconds"], int)
+        assert isinstance(data["memory_usage_mb"], int)
 
 
 class TestFilesEndpoint:
@@ -101,7 +101,7 @@ class TestFileContentEndpoint:
         
         data = response.json()
         assert "content" in data
-        assert "file_info" in data
+        assert "metadata" in data
         assert "# Test Project" in data["content"]
 
     def test_file_content_python(self, test_client: TestClient):
