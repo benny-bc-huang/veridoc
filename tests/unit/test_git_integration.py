@@ -7,7 +7,7 @@ import subprocess
 from unittest.mock import patch, MagicMock, call
 from pathlib import Path
 
-from core.git_integration import GitIntegration
+from veridoc.core.git_integration import GitIntegration
 
 
 class TestGitIntegration:

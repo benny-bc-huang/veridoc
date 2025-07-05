@@ -10,10 +10,10 @@ from pathlib import Path
 from typing import Generator, List, Dict
 from fastapi.testclient import TestClient
 
-from app import app
-from core.config import Config
-from core.security import SecurityManager
-from core.file_handler import FileHandler
+from veridoc.server import app
+from veridoc.core.config import Config
+from veridoc.core.security import SecurityManager
+from veridoc.core.file_handler import FileHandler
 
 
 @pytest.fixture(scope="session")
@@ -115,15 +115,15 @@ def test_client(test_data_dir: Path, monkeypatch) -> TestClient:
     # Create a simplified FastAPI app for testing without complex lifespan
     from fastapi import FastAPI, HTTPException
     from fastapi.responses import JSONResponse
-    from core.enhanced_error_handling import handle_async_api_error
+    from veridoc.core.enhanced_error_handling import handle_async_api_error
     
     test_app = FastAPI(title="VeriDoc Test API", version="1.0.0")
     
     # Initialize components for testing
-    from core.config import Config
-    from core.security import SecurityManager
-    from core.file_handler import FileHandler
-    from core.search_optimization import OptimizedSearchEngine
+    from veridoc.core.config import Config
+    from veridoc.core.security import SecurityManager
+    from veridoc.core.file_handler import FileHandler
+    from veridoc.core.search_optimization import OptimizedSearchEngine
     
     config = Config()
     config.BASE_PATH = str(test_data_dir)

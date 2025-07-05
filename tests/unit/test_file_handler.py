@@ -7,8 +7,8 @@ import json
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from core.file_handler import FileHandler
-from core.security import SecurityManager
+from veridoc.core.file_handler import FileHandler
+from veridoc.core.security import SecurityManager
 
 
 class TestFileHandler:

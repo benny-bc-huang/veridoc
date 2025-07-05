@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List
 from unittest.mock import patch, MagicMock
 
-from core.security import SecurityManager
+from veridoc.core.security import SecurityManager
 
 
 class TestSecurityManager:
