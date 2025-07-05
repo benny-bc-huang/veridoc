@@ -24,6 +24,13 @@ VeriDoc is a lightweight, open-source documentation browser designed for AI-assi
 - 🖥️ **Terminal integration** with security controls
 - 🔐 **Secure** with comprehensive path validation and audit logging
 
+## Screenshots
+
+<div align="center">
+  <img src="img/web-page.png" alt="VeriDoc Interface" width="800">
+  <p><em>Three-pane interface: file tree, content viewer, and integrated terminal</em></p>
+</div>
+
 ## Installation
 
 ```bash
