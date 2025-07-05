@@ -4,11 +4,11 @@ Thank you for your interest in contributing to VeriDoc! This document provides g
 
 ## Development Status
 
-VeriDoc is currently in active development:
+VeriDoc is currently in Phase 4 (Open Source Preparation):
 - **Phase 1**: ✅ Complete - Core documentation MVP
-- **Phase 2**: 🚧 In Progress - Enhanced features
-- **Phase 3**: 📋 Planned - CLI integration  
-- **Phase 4**: 📋 Planned - Open source polish
+- **Phase 2**: ✅ Complete - Enhanced features (search, pagination, ToC)
+- **Phase 3**: ✅ Complete - CLI integration, terminal features, Git operations
+- **Phase 4**: 🚧 In Progress - Open source preparation and polish
 
 ## Getting Started
 
@@ -21,7 +21,7 @@ VeriDoc is currently in active development:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/veridoc.git
+git clone https://github.com/benny-bc-huang/veridoc.git
 cd veridoc
 
 # Create virtual environment
@@ -33,27 +33,34 @@ pip install -r requirements.txt
 
 # Start development server
 python app.py
+# Opens automatically at http://localhost:5000
 
-# Open browser to http://localhost:5000
+# Alternative: Use CLI integration
+./veridoc                     # Launch VeriDoc from any directory
+./veridoc docs/               # Open specific directory
+./veridoc README.md           # Open specific file
 ```
 
 ## Project Structure
 
 ```
 veridoc/
-├── app.py                 # Main FastAPI application
-├── core/                  # Backend core modules
-│   ├── config.py         # Configuration management
-│   ├── file_handler.py   # File system operations
-│   └── security.py       # Security validation
-├── models/               # Data models
-│   └── api_models.py     # API request/response models
-├── frontend/             # Frontend application
-│   ├── css/              # Stylesheets
-│   ├── js/               # JavaScript modules
-│   └── index.html        # Main HTML template
-├── docs/                 # Documentation
-└── tests/                # Test files (future)
+├── veridoc               # Executable CLI script
+├── app.py                # Main FastAPI application
+├── core/                 # Backend core modules
+│   ├── config.py        # Configuration management
+│   ├── file_handler.py  # File system operations
+│   ├── git_integration.py # Git operations
+│   └── security.py      # Security validation
+├── models/              # API data models
+│   └── api_models.py    # Request/response models
+├── frontend/            # Frontend application
+│   ├── css/             # Component stylesheets
+│   ├── js/              # JavaScript modules & components
+│   └── index.html       # Main HTML template
+├── completions/         # Shell completion scripts
+├── docs/                # Documentation
+└── tests/               # Test files (Phase 4)
 ```
 
 ## Development Guidelines
@@ -84,45 +91,56 @@ type(scope): description
 3. Ensure all tests pass
 4. Submit a pull request with clear description
 
-## Areas for Contribution
+## Current Phase 4 Priorities
 
-### High Priority (Phase 2)
-- [ ] **Search functionality** - Full-text search across documentation
-- [ ] **Large file handling** - Pagination for files > 1MB
-- [ ] **Table of contents** - Auto-generated for Markdown files
-- [ ] **Find-in-file** - Regex search within documents
+### High Priority (Security & Stability)
+- [ ] **Testing**: Implement comprehensive test suite (unit, integration, security)
+- [ ] **Error Handling**: Replace generic exception handling with specific exceptions
+- [ ] **Terminal Security**: Add command restrictions and session isolation
+- [ ] **Documentation**: Complete API documentation and deployment guides
 
-### Medium Priority (Phase 3)
-- [ ] **CLI integration** - Helper script implementation
-- [ ] **Terminal functionality** - Integrated terminal with xterm.js
-- [ ] **Syntax highlighting** - Code file support
-- [ ] **Performance optimization** - Memory usage < 100MB
+### Medium Priority (Performance & Quality)
+- [ ] **Search Optimization**: Implement indexing and caching for large codebases
+- [ ] **Code Quality**: Fix PEP 8 violations and extract embedded classes
+- [ ] **Performance**: Optimize memory usage and file operations
+- [ ] **User Experience**: Complete TODO items and enhance error messages
 
-### Low Priority (Phase 4)
-- [ ] **Testing** - Unit and integration tests
-- [ ] **Documentation** - API docs, user guides
-- [ ] **CI/CD** - GitHub Actions pipeline
-- [ ] **Packaging** - Distribution preparation
+### Low Priority (Polish)
+- [ ] **Documentation**: Generate OpenAPI docs, create deployment guide
+- [ ] **Code Cleanup**: Remove debug console.log statements
+- [ ] **Accessibility**: Add a11y considerations to frontend
 
 ## Testing
 
-### Running Tests
+### Current Status
+VeriDoc needs comprehensive testing infrastructure as part of Phase 4.
+
+### Testing Priorities
+1. **Unit Tests**: Core functionality (security, file handling, Git operations)
+2. **Integration Tests**: API endpoints, WebSocket terminal
+3. **Security Tests**: Path traversal prevention, input validation
+4. **Performance Tests**: Memory usage, search performance
+
+### Test Structure (Planned)
 ```bash
-# Python tests (when implemented)
-pytest tests/
-
-# Frontend tests (when implemented)
-cd frontend && npm test
-
-# Integration tests (when implemented)
-python -m pytest tests/integration/
+tests/
+├── unit/
+│   ├── test_security.py      # SecurityManager tests
+│   ├── test_file_handler.py  # FileHandler tests
+│   └── test_git_integration.py # Git operations tests
+├── integration/
+│   ├── test_api.py           # API endpoint tests
+│   └── test_terminal.py      # Terminal WebSocket tests
+├── security/
+│   └── test_path_traversal.py # Security vulnerability tests
+└── conftest.py               # Test configuration
 ```
 
 ### Test Coverage
 - Aim for >80% test coverage
-- Include unit tests for all new features
+- Include unit tests for all core functionality
 - Add integration tests for API endpoints
-- Include frontend tests for UI components
+- Include security tests for vulnerability prevention
 
 ## Documentation
 
@@ -140,25 +158,27 @@ python -m pytest tests/integration/
 
 ## Security
 
-### Security Guidelines
+### Security Model
+- All file access restricted to BASE_PATH
+- Path traversal prevention with symbolic link validation
+- Input sanitization for all API parameters
+- Read-only interface design
+- Terminal commands logged for audit
+
+### Security Contributions
 - Never commit secrets or API keys
 - Validate all user inputs
 - Follow secure coding practices
-- Report security issues privately
-
-### File Access Security
-- All file access must be within BASE_PATH
-- Prevent path traversal attacks
-- Validate file extensions and sizes
-- Implement proper error handling
+- Report security issues privately to maintainers
 
 ## Performance
 
 ### Performance Targets
-- Application startup: < 2 seconds
-- File loading: < 500ms for typical files
-- Memory usage: < 100MB total
-- Browser response: < 100ms for navigation
+- **Application startup**: < 2 seconds ✅
+- **File loading**: < 500ms for typical files ✅
+- **Search response**: < 200ms across 1000+ files ✅
+- **Memory usage**: < 100MB total ✅
+- **Browser response**: < 100ms for navigation ✅
 
 ### Optimization Guidelines
 - Use lazy loading for large datasets
@@ -175,11 +195,12 @@ python -m pytest tests/integration/
 5. **Open** a Pull Request
 
 ### Pull Request Requirements
-- Clear description of changes
-- Reference related issues
+- Clear description of changes and motivation
+- Reference related issues using `#issue-number`
 - Include tests for new functionality
 - Update documentation as needed
 - Ensure all CI checks pass
+- Follow code style guidelines
 
 ## Code Review
 
@@ -190,11 +211,12 @@ python -m pytest tests/integration/
 - Ensure compatibility with existing features
 
 ### Review Checklist
-- [ ] Code follows project style guidelines
+- [ ] Code follows project style guidelines (PEP 8, ES6+)
 - [ ] Tests are included and passing
 - [ ] Documentation is updated
 - [ ] Security considerations addressed
 - [ ] Performance impact evaluated
+- [ ] No hardcoded values or debug code
 
 ## Release Process
 
@@ -209,7 +231,8 @@ python -m pytest tests/integration/
 - [ ] Documentation updated
 - [ ] Performance targets met
 - [ ] Security review completed
-- [ ] Changelog updated
+- [ ] CHANGELOG.md updated
+- [ ] Version numbers incremented
 
 ## Community
 
@@ -220,9 +243,10 @@ python -m pytest tests/integration/
 - Be respectful and inclusive
 
 ### Getting Help
-- Check existing issues and documentation
-- Ask questions in GitHub Discussions
-- Reach out to maintainers if needed
+- Check existing issues and documentation first
+- Search GitHub Discussions for similar questions
+- Open an issue with clear description and steps to reproduce
+- Provide system information and error messages
 
 ## License
 

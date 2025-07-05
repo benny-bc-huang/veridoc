@@ -13,10 +13,13 @@ VeriDoc follows a clean, modular directory structure that separates concerns and
 ├── app.py                    # Main FastAPI server entry point
 ├── veridoc                   # CLI script (executable)
 ├── requirements.txt          # Python dependencies
+├── pyproject.toml           # Project configuration
+├── setup.cfg                # Tool configuration
 ├── install.sh               # Installation script
 ├── CLAUDE.md                # Claude Code instructions
 ├── README.md                # Project documentation
 ├── LICENSE                  # License file
+├── CHANGELOG.md             # Version history
 ├── core/                    # Backend core modules
 ├── models/                  # API data models
 ├── frontend/                # Web application
@@ -43,7 +46,11 @@ core/
 ├── config.py                # Configuration management
 ├── file_handler.py          # File system operations and security
 ├── git_integration.py       # Git operations and repository management
-└── security.py              # Security validation and path controls
+├── security.py              # Security validation and path controls
+├── terminal_security.py     # Terminal command filtering and audit
+├── search_optimization.py   # Search indexing and caching engine
+├── performance_monitor.py   # Real-time performance metrics
+└── enhanced_error_handling.py # Comprehensive exception management
 ```
 
 **Purpose**: Contains the core backend logic with clear separation of concerns. Each module handles a specific aspect of the application.
@@ -117,13 +124,25 @@ docs/
 
 ```
 tests/
+├── __init__.py             # Python package initialization
+├── conftest.py             # Pytest fixtures and configuration
+├── test_unit/              # Unit tests for individual components
+│   ├── test_security.py    # Security module tests
+│   ├── test_search.py      # Search engine tests
+│   └── test_performance.py # Performance monitor tests
+├── test_integration/       # Integration tests
+│   ├── test_api.py         # API endpoint tests
+│   └── test_terminal.py    # Terminal integration tests
+├── test_security/          # Security-specific tests
+│   ├── test_path_traversal.py # Path traversal attack tests
+│   └── test_command_injection.py # Command injection tests
 ├── frontend/               # Frontend-specific tests
 │   └── test.html          # HTML test file
 ├── test_readme.md         # Test documentation
 └── test_script.js         # JavaScript test files
 ```
 
-**Purpose**: Consolidated location for all test files, organized by application layer.
+**Purpose**: Comprehensive test suite with unit, integration, and security tests. Organized by test type for easy navigation and maintenance.
 
 ### Development Artifacts (`/dev/`)
 

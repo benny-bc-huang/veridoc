@@ -30,9 +30,29 @@ from core.security import SecurityManager
 from core.file_handler import FileHandler
 from core.config import Config
 from core.git_integration import GitIntegration
+from core.terminal_security import TerminalSecurityManager
+from core.enhanced_error_handling import (
+    error_handler,
+    handle_api_error,
+    handle_async_api_error,
+    VeriDocError,
+    ValidationError,
+    PermissionError,
+    NotFoundError,
+    SecurityError
+)
+from core.performance_monitor import (
+    performance_monitor,
+    async_performance_tracking
+)
+from core.search_optimization import OptimizedSearchEngine
 from models.api_models import (
-    FileListResponse, FileItem, FileContentResponse, 
-    FileMetadata, HealthResponse, ErrorResponse
+    FileListResponse,
+    FileItem,
+    FileContentResponse,
+    FileMetadata,
+    HealthResponse,
+    ErrorResponse
 )
 
 # Initialize configuration
@@ -47,6 +67,8 @@ app = FastAPI(
 security_manager = SecurityManager(config.base_path)
 file_handler = FileHandler(security_manager)
 git_integration = GitIntegration(config.base_path)
+terminal_security = TerminalSecurityManager(config.base_path)
+search_engine = OptimizedSearchEngine(config.base_path)
 
 # Serve static files
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
@@ -57,53 +79,89 @@ async def serve_index():
     return FileResponse("frontend/index.html")
 
 @app.get("/api/health", response_model=HealthResponse)
+@async_performance_tracking
 async def health_check():
-    """Health check endpoint"""
+    """Health check endpoint with real metrics"""
+    metrics = performance_monitor.get_current_metrics()
+    health_check = performance_monitor.check_health()
+    
     return HealthResponse(
-        status="healthy",
+        status=health_check["status"],
         version="1.0.0",
         base_path=str(config.base_path),
-        memory_usage_mb=0,  # TODO: Implement memory monitoring
-        uptime_seconds=0,   # TODO: Implement uptime tracking
-        active_connections=0
+        memory_usage_mb=metrics["memory_usage_mb"],
+        uptime_seconds=metrics["uptime_seconds"],
+        active_connections=metrics["active_connections"]
     )
 
 @app.get("/api/files", response_model=FileListResponse)
+@handle_async_api_error
 async def get_files(
     path: str = Query("/", description="Relative path from base directory"),
     include_hidden: bool = Query(False, description="Include hidden files"),
-    sort_by: str = Query("name", description="Sort field: name, size, modified"),
+    sort_by: str = Query(
+        "name", description="Sort field: name, size, modified"
+    ),
     sort_order: str = Query("asc", description="Sort order: asc, desc")
 ):
     """Get directory listing"""
+    # Validate path parameter
+    if not path:
+        raise ValidationError("Path parameter is required", field="path")
+    
+    if sort_by not in ["name", "size", "modified"]:
+        raise ValidationError(
+            f"Invalid sort_by value: {sort_by}", field="sort_by"
+        )
+    
+    if sort_order not in ["asc", "desc"]:
+        raise ValidationError(
+            f"Invalid sort_order value: {sort_order}", field="sort_order"
+        )
+    
     try:
         # Validate and resolve path
         safe_path = security_manager.validate_path(path)
-        
-        # Get directory listing
-        items = await file_handler.list_directory(
-            safe_path, 
-            include_hidden=include_hidden,
-            sort_by=sort_by,
-            sort_order=sort_order
-        )
-        
-        # Get parent path
-        parent_path = "/" if safe_path == config.base_path else str(safe_path.parent.relative_to(config.base_path))
-        
-        return FileListResponse(
-            path=path,
-            parent=parent_path,
-            items=items,
-            total_items=len(items)
-        )
-        
-    except PermissionError:
-        raise HTTPException(status_code=403, detail="Access denied")
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Directory not found")
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        if "outside base directory" in str(e):
+            raise SecurityError(
+                f"Path traversal attempt detected: {path}",
+                violation_type="path_traversal"
+            )
+        else:
+            raise PermissionError(f"Invalid path: {path}", resource=path)
+    
+    if not safe_path.exists():
+        raise NotFoundError(
+            f"Directory not found: {path}", resource_type="directory"
+        )
+    
+    if not safe_path.is_dir():
+        raise ValidationError(
+            f"Path is not a directory: {path}", field="path"
+        )
+    
+    # Get directory listing
+    items = await file_handler.list_directory(
+        safe_path,
+        include_hidden=include_hidden,
+        sort_by=sort_by,
+        sort_order=sort_order
+    )
+    
+    # Get parent path
+    parent_path = (
+        "/"
+        if safe_path == config.base_path
+        else str(safe_path.parent.relative_to(config.base_path))
+    )
+    
+    return FileListResponse(
+        path=path,
+        parent=parent_path,
+        items=items,
+        total_items=len(items)
+    )
 
 @app.get("/api/file_content", response_model=FileContentResponse)
 async def get_file_content(
@@ -318,10 +376,17 @@ class TerminalManager:
     def __init__(self):
         self.active_connections = {}
         self.processes = {}
+        self.security = terminal_security
     
     async def connect(self, websocket: WebSocket, terminal_id: str):
         await websocket.accept()
         self.active_connections[terminal_id] = websocket
+        
+        # Create security session
+        self.security.create_session(terminal_id, {
+            'ip': websocket.client.host if websocket.client else 'unknown',
+            'user_agent': websocket.headers.get('user-agent', 'unknown')
+        })
         
         # Start a new shell process
         master, slave = pty.openpty()
@@ -341,6 +406,9 @@ class TerminalManager:
         asyncio.create_task(self.read_terminal(terminal_id))
     
     async def disconnect(self, terminal_id: str):
+        # End security session
+        self.security.end_session(terminal_id)
+        
         if terminal_id in self.active_connections:
             del self.active_connections[terminal_id]
         
@@ -359,6 +427,24 @@ class TerminalManager:
     
     async def send_to_terminal(self, terminal_id: str, data: str):
         if terminal_id in self.processes:
+            # Security validation for commands
+            if data.endswith('\r') or data.endswith('\n'):
+                # This is a command being executed
+                command = data.rstrip('\r\n')
+                validation = self.security.validate_command(terminal_id, command)
+                
+                if not validation['allowed']:
+                    # Send security warning to terminal
+                    warning_msg = f"\r\n⚠️  Command blocked: {validation['reason']}\r\n$ "
+                    websocket = self.active_connections.get(terminal_id)
+                    if websocket:
+                        await websocket.send_text(warning_msg)
+                    return
+                
+                # Use sanitized command if available
+                if validation['sanitized_command'] != command:
+                    data = validation['sanitized_command'] + data[-1]  # Keep the line ending
+            
             master = self.processes[terminal_id]['master']
             try:
                 os.write(master, data.encode('utf-8'))
@@ -421,17 +507,25 @@ async def websocket_terminal(websocket: WebSocket, terminal_id: str):
         print(f"Terminal WebSocket error: {e}")
         await terminal_manager.disconnect(terminal_id)
 
+@app.exception_handler(VeriDocError)
+async def veridoc_exception_handler(request, exc: VeriDocError):
+    """Handle VeriDoc-specific exceptions"""
+    status_code = error_handler.get_http_status_code(exc)
+    response = error_handler.get_error_response(exc)
+    return JSONResponse(status_code=status_code, content=response)
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
-    """Global exception handler"""
-    return JSONResponse(
-        status_code=500,
-        content={
-            "error": True,
-            "message": "Internal server error",
-            "code": "INTERNAL_ERROR"
-        }
-    )
+    """Global exception handler for unhandled exceptions"""
+    veridoc_error = error_handler.handle_exception(exc, {
+        "url": str(request.url),
+        "method": request.method,
+        "client": str(request.client) if request.client else "unknown"
+    })
+    
+    status_code = error_handler.get_http_status_code(veridoc_error)
+    response = error_handler.get_error_response(veridoc_error)
+    return JSONResponse(status_code=status_code, content=response)
 
 if __name__ == "__main__":
     import argparse

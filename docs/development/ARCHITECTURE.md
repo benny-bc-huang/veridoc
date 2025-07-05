@@ -51,11 +51,12 @@ VeriDoc is a lightweight, web-based documentation browser designed for AI-assist
 ### Backend Server
 
 #### Technology Stack
-**Primary Option**: FastAPI (Python)
+**Production Implementation**: FastAPI (Python) with async support
 - Type hints for automatic API documentation
 - Excellent performance for I/O bound operations
 - Built-in validation and serialization
 - WebSocket support for terminal integration
+- Async/await support for concurrent operations
 
 **Alternative**: Express.js (Node.js)
 - Single-language stack
@@ -75,20 +76,31 @@ veridoc/
 │   └── health.py       # Health check and metrics
 ├── core/
 │   ├── __init__.py
-│   ├── security.py     # Path validation and sanitization
-│   ├── file_handler.py # File system operations
-│   └── config.py       # Configuration management
+│   ├── security.py              # Path validation and sanitization
+│   ├── terminal_security.py     # Terminal command filtering
+│   ├── file_handler.py          # File system operations
+│   ├── search_optimization.py   # Search indexing engine
+│   ├── performance_monitor.py   # Real-time metrics
+│   ├── enhanced_error_handling.py # Exception management
+│   ├── git_integration.py       # Git operations
+│   └── config.py               # Configuration management
 ├── models/
 │   ├── __init__.py
 │   ├── api_models.py   # Pydantic models for API
 │   └── file_models.py  # File metadata models
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py     # Test fixtures
+│   ├── test_unit/      # Unit tests
+│   ├── test_integration/ # Integration tests
+│   └── test_security/  # Security tests
 └── utils/
     ├── __init__.py
     ├── logging.py      # Structured logging
     └── performance.py  # Performance monitoring
 ```
 
-#### Security Layer
+#### Security Layer (Production Implementation)
 ```python
 class SecurityManager:
     def __init__(self, base_path: str):
@@ -106,6 +118,17 @@ class SecurityManager:
         # Remove null bytes
         # Escape special characters
         # Validate length limits
+
+class TerminalSecurityManager:
+    def __init__(self):
+        self.whitelist_patterns = [...]  # Allowed commands
+        self.blacklist_patterns = [...]  # Dangerous patterns
+        
+    def validate_command(self, command: str) -> bool:
+        """Validate terminal commands for safety"""
+        # Check against whitelist/blacklist
+        # Log security events
+        # Return validation result
 ```
 
 ### Frontend Application
