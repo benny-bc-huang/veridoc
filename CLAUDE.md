@@ -32,6 +32,50 @@ VeriDoc is a lightweight, open-source documentation browser designed for AI-assi
 - **Zero-Context-Switch**: <500ms startup time to maintain AI development flow
 - **Terminal-Native**: Direct integration with command-line AI workflows
 
+## 🔄 Claude Code Workflow Instructions
+
+**MANDATORY**: Follow these workflow instructions when working with VeriDoc:
+
+### 1. Session Initialization
+- **ALWAYS** read `dev/initialize.prompt` at the start of every new session
+- This file contains the most current project context and status
+- Use it to understand completed milestones, current phase, and recent achievements
+
+### 2. Documentation Updates
+- **ALWAYS** update both `CLAUDE.md` and `dev/initialize.prompt` when any feature, milestone, or phase is completed
+- Keep both files synchronized with the latest project status
+- Document achievements immediately after completion for accurate tracking
+
+### 3. File Editing Safety
+- **ALWAYS** verify that replacement strings exist in the target file before using Edit/MultiEdit tools
+- Use Read tool first to confirm exact text content and formatting
+- Check line numbers and context to ensure accurate replacements
+- Use Grep tool to locate target text if unsure of exact content
+
+### 4. Feature Development Planning
+- **ALWAYS** create a plan using TodoWrite tool before implementing any new feature, milestone, or phase requirement
+- Break down complex tasks into smaller, manageable steps
+- Track progress with todo status updates (pending → in_progress → completed)
+- Document planning decisions and implementation approach
+
+### Example Workflow:
+```bash
+# 1. Start session - read project context
+Read dev/initialize.prompt
+
+# 2. Plan new feature
+TodoWrite: Create todo list with implementation steps
+
+# 3. Implement feature with safety checks
+Read target_file.py  # Verify content before editing
+Edit target_file.py  # Make changes with exact string matching
+
+# 4. Update documentation after completion
+Edit CLAUDE.md       # Update with new milestone
+Edit dev/initialize.prompt  # Sync with latest status
+git commit          # Commit changes with descriptive message
+```
+
 ## Development Commands
 
 **Current Status**: **🎉 ALL PHASES COMPLETE + TEST SUITE UPDATED** - **Production Ready for Open Source Release**. All 5 development phases complete with 100% unit test coverage and full pip installation functionality. Test suite successfully updated for new package structure. VeriDoc is now a professional, production-ready open-source package.
