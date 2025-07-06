@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="logo-dark.png" alt="VeriDoc Logo" width="120" height="120">
+  <img src="https://raw.githubusercontent.com/benny-bc-huang/veridoc/main/logo-dark.png" alt="VeriDoc Logo" width="120" height="120">
   
   # VeriDoc
   
@@ -27,7 +27,7 @@ VeriDoc is a lightweight, open-source documentation browser designed for AI-assi
 ## Screenshots
 
 <div align="center">
-  <img src="img/web-page.png" alt="VeriDoc Interface" width="800">
+  <img src="https://raw.githubusercontent.com/benny-bc-huang/veridoc/main/img/web-page.png" alt="VeriDoc Interface" width="800">
   <p><em>Three-pane interface: file tree, content viewer, and integrated terminal</em></p>
 </div>
 
