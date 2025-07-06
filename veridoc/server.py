@@ -86,7 +86,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="VeriDoc API",
     description="AI-Optimized Documentation Browser API",
-    version="1.0.1",
+    version="1.0.2",
     lifespan=lifespan
 )
 

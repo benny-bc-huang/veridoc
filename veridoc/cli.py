@@ -148,7 +148,7 @@ Examples:
     parser.add_argument(
         '--version',
         action='version',
-        version='VeriDoc CLI 1.0.1'
+        version='VeriDoc CLI 1.0.2'
     )
     
     args = parser.parse_args()

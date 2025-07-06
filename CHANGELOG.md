@@ -5,6 +5,19 @@ All notable changes to VeriDoc will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2025-07-06
+
+### Fixed
+- **PyPI Image Display**: Fixed logo and screenshot display on PyPI project page
+  - Updated README.md to use absolute GitHub raw content URLs instead of relative paths
+  - Logo now displays properly using: `https://raw.githubusercontent.com/benny-bc-huang/veridoc/main/logo-dark.png`
+  - Screenshot now displays properly using: `https://raw.githubusercontent.com/benny-bc-huang/veridoc/main/img/web-page.png`
+- **Version Consistency**: Updated all version references across codebase to 1.0.2
+
+### Technical Details
+- No functionality changes - purely documentation improvements
+- Ensures proper image rendering on PyPI and other external documentation sites
+
 ## [1.0.1] - 2025-07-05
 
 ### 🏆 Achievement Update - 100% Unit Test Pass Rate

@@ -7,7 +7,7 @@
 - **`veridoc` CLI script**: Functional executable with argument parsing, port management, and browser integration
 - **`install.sh`**: Shell installation script with completions for Bash, Zsh, Fish
 - **Shell completions**: Complete support in `completions/` directory
-- **Package metadata**: Version 1.0.1, proper classifiers, dependencies defined
+- **Package metadata**: Version 1.0.2, proper classifiers, dependencies defined
 
 ### Issues Found (🔴 Need Fixing)
 1. **Entry Point Mismatch**: `pyproject.toml` references `veridoc.cli:main` but this module doesn't exist

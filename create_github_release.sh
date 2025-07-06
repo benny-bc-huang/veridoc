@@ -1,7 +1,7 @@
 #!/bin/bash
-# Create GitHub Release for VeriDoc v1.0.1
+# Create GitHub Release for VeriDoc v1.0.2
 
-echo "📦 Creating GitHub Release for VeriDoc v1.0.1"
+echo "📦 Creating GitHub Release for VeriDoc v1.0.2"
 echo "============================================"
 
 # Check if gh CLI is installed
@@ -19,13 +19,13 @@ if ! gh auth status &> /dev/null; then
 fi
 
 # Create the release
-echo "Creating release v1.0.1..."
-gh release create v1.0.1 \
-    --title "VeriDoc v1.0.1 - First Official Release" \
-    --notes-file RELEASE_NOTES_v1.0.1.md \
+echo "Creating release v1.0.2..."
+gh release create v1.0.2 \
+    --title "VeriDoc v1.0.2 - PyPI Image Display Fix" \
+    --notes-file RELEASE_NOTES_v1.0.2.md \
     --verify-tag
 
 echo "✅ GitHub release created successfully!"
 echo ""
 echo "View the release at:"
-echo "https://github.com/benny-bc-huang/veridoc/releases/tag/v1.0.1"
+echo "https://github.com/benny-bc-huang/veridoc/releases/tag/v1.0.2"

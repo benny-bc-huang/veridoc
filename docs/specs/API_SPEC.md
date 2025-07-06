@@ -209,7 +209,7 @@ Server health and status information.
 ```json
 {
   "status": "healthy",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "uptime_seconds": 3600,
   "base_path": "/home/user/project",
   "memory_usage_mb": 45,
@@ -326,11 +326,12 @@ X-RateLimit-Reset: 1640995200
 
 ### Version Header
 ```
-X-API-Version: 1.0.1
+X-API-Version: 1.0.2
 ```
 
 ### Backward Compatibility
 - v1.0.0: Initial Phase 4 release
+- v1.0.2: Fixed PyPI image display with absolute GitHub URLs
 - v1.0.1: Enhanced error handling and **100% unit test coverage**
 - Future versions will maintain backward compatibility
 - Deprecated endpoints will include sunset warnings
