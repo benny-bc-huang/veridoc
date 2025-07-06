@@ -163,7 +163,7 @@ python3 -m pytest tests/security/ -v           # Security tests
 **Achievement** (July 6, 2025): First official release of VeriDoc published to GitHub:
 
 ### Release Accomplishments
-- ✅ **GitHub Release Created**: v1.0.1 live at https://github.com/benny-bc-huang/veridoc/releases/tag/v1.0.1 (v1.0.2 pending)
+- ✅ **GitHub Release Created**: v1.0.2 live at https://github.com/benny-bc-huang/veridoc/releases/tag/v1.0.2
 - ✅ **Release Preparation**: MANIFEST.in, build scripts, and release notes completed
 - ✅ **Dependency Management**: requirements.txt aligned with pyproject.toml, LICENSE updated
 - ✅ **Documentation Enhancement**: Added interface screenshot to README
@@ -177,7 +177,7 @@ python3 -m pytest tests/security/ -v           # Security tests
 - **Test Suite**: 100% pass rate (124/124 tests) ensuring quality
 - **PyPI URL**: https://pypi.org/project/veridoc/1.0.1/
 
-**Status**: VeriDoc v1.0.2 is live on PyPI, GitHub release pending.
+**Status**: VeriDoc v1.0.2 is live on both GitHub and PyPI for public distribution.
 
 ## Previous Milestone - **🎨 Enhanced File Access & Professional Branding ✅**
 
