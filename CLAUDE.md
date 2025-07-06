@@ -100,7 +100,7 @@ git commit          # Commit changes with descriptive message
 
 ## Development Commands
 
-**Current Status**: **🎉 ALL PHASES COMPLETE + v1.0.1 RELEASED** - **GitHub Release Live, PyPI Ready**. All 5 development phases complete with 100% unit test coverage. First official release (v1.0.1) published on GitHub. Package structure verified and ready for PyPI distribution pending account setup.
+**Current Status**: **🎉 ALL PHASES COMPLETE + v1.0.1 RELEASED ON PYPI** - **GitHub Release Live, PyPI Published**. All 5 development phases complete with 100% unit test coverage. First official release (v1.0.1) published on both GitHub and PyPI for public distribution.
 
 ```bash
 # Production Installation & Usage (Recommended)
@@ -143,9 +143,22 @@ python3 -m pytest tests/security/ -v           # Security tests
 - **Overall Unit Tests**: ✅ **100% passing (71/71)** - **🏆 GOAL ACHIEVED! 🏆**
 - **Combined Test Suite**: ✅ **100% passing (124/124 all tests)** - **🏆 COMPLETE SUCCESS! 🏆**
 
-## Recent Milestone - **🚀 v1.0.1 Official Release Published ✅**
+## Recent Milestone - **🚀 VeriDoc v1.0.1 Published to PyPI ✅**
 
-**Latest Achievement** (July 6, 2025): First official release of VeriDoc published to GitHub:
+**Latest Achievement** (July 6, 2025): VeriDoc officially published to PyPI for public distribution:
+
+### PyPI Publication Success
+- ✅ **Published to PyPI**: VeriDoc now available via `pip install veridoc`
+- ✅ **Package URL**: https://pypi.org/project/veridoc/1.0.1/
+- ✅ **Distribution Files**: Both wheel and source distribution uploaded successfully
+- ✅ **Installation Verified**: Package installs correctly from PyPI
+- ✅ **Documentation Updated**: README now shows PyPI installation as primary method
+
+**Status**: VeriDoc is now publicly available on PyPI, making installation as simple as `pip install veridoc`.
+
+## Previous Milestone - **🚀 v1.0.1 GitHub Release ✅**
+
+**Achievement** (July 6, 2025): First official release of VeriDoc published to GitHub:
 
 ### Release Accomplishments
 - ✅ **GitHub Release Created**: v1.0.1 live at https://github.com/benny-bc-huang/veridoc/releases/tag/v1.0.1
@@ -155,13 +168,14 @@ python3 -m pytest tests/security/ -v           # Security tests
 - ✅ **Package Structure**: Verified for PyPI distribution with proper metadata
 - ✅ **Build Tools**: Installed twine, build, and created automation scripts
 
-### PyPI Readiness
+### PyPI Publication Success
 - **Package Configuration**: Complete with pyproject.toml, MANIFEST.in
 - **Build Scripts**: `build_and_publish.sh` ready for package building
-- **Distribution**: Awaiting PyPI account verification for publication
+- **Distribution**: ✅ **Published to PyPI** - Available via `pip install veridoc`
 - **Test Suite**: 100% pass rate (124/124 tests) ensuring quality
+- **PyPI URL**: https://pypi.org/project/veridoc/1.0.1/
 
-**Status**: VeriDoc v1.0.1 is live on GitHub and fully prepared for PyPI distribution.
+**Status**: VeriDoc v1.0.1 is live on both GitHub and PyPI for public distribution.
 
 ## Previous Milestone - **🎨 Enhanced File Access & Professional Branding ✅**
 

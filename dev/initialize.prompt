@@ -5,13 +5,13 @@
 VeriDoc is an AI-optimized documentation browser designed for rapid development workflows. It provides sub-second documentation access optimized for AI-assisted development.
 
 ## Current Status
-- **Phase**: **🎉 ALL PHASES COMPLETE + v1.0.1 RELEASED** ✅ (July 6, 2025)
+- **Phase**: **🎉 ALL PHASES COMPLETE + v1.0.1 RELEASED ON PYPI** ✅ (July 6, 2025)
 - **Repository**: https://github.com/benny-bc-huang/veridoc (private, ready for public)
 - **Branch**: main
 - **Release**: **v1.0.1 LIVE on GitHub** - https://github.com/benny-bc-huang/veridoc/releases/tag/v1.0.1
-- **PyPI Status**: Package ready, awaiting account verification for publication
+- **PyPI Status**: **PUBLISHED** - Available via `pip install veridoc` - https://pypi.org/project/veridoc/1.0.1/
 - **Technology**: Python FastAPI backend with async support, Vanilla JS frontend, full CLI integration
-- **Achievement**: First official release published, 100% test coverage, professional branding, complete documentation
+- **Achievement**: First official release published on GitHub and PyPI, 100% test coverage, professional branding, complete documentation
 
 ## Key Features Implemented
 ### Phase 1 (Core MVP):
@@ -64,12 +64,13 @@ VeriDoc is an AI-optimized documentation browser designed for rapid development 
 - **Build Scripts**: Automated scripts for building and publishing (build_and_publish.sh)
 - **Documentation**: Added interface screenshot to README for visual demonstration
 
-#### PyPI Preparation Complete
+#### PyPI Publication Success
 - **Dependencies**: requirements.txt aligned with pyproject.toml
 - **LICENSE**: Updated with third-party dependency attributions
 - **Configuration**: Removed duplicate pytest config from setup.cfg
 - **Build Tools**: Installed twine 6.1.0 and build package
-- **Status**: Package ready for PyPI publication pending account verification
+- **Published to PyPI**: VeriDoc v1.0.1 now available via `pip install veridoc`
+- **Package URL**: https://pypi.org/project/veridoc/1.0.1/
 
 ### **🎨 PREVIOUS ENHANCEMENTS (July 2025) - Enhanced File Access & Professional Branding**:
 
