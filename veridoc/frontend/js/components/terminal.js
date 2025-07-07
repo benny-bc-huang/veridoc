@@ -18,11 +18,15 @@ class TerminalComponent {
     
     async initializeTerminal() {
         try {
+            console.log('Terminal: Starting initialization...');
+            
             // Check if xterm.js is loaded
             if (typeof Terminal === 'undefined') {
-                console.error('xterm.js not loaded');
-                return;
+                console.error('Terminal: xterm.js not loaded');
+                throw new Error('xterm.js library not available');
             }
+            
+            console.log('Terminal: xterm.js library available');
             
             // Create terminal instance
             this.terminal = new Terminal({
@@ -73,20 +77,34 @@ class TerminalComponent {
     }
     
     mount(container) {
+        console.log('Terminal: Starting mount process...', container);
+        
         if (!this.terminal) {
-            console.error('Terminal not initialized');
-            return;
+            console.error('Terminal: Cannot mount - terminal not initialized');
+            throw new Error('Terminal not initialized');
+        }
+        
+        if (!container) {
+            console.error('Terminal: Cannot mount - no container provided');
+            throw new Error('No container provided for terminal mount');
         }
         
         try {
+            console.log('Terminal: Opening terminal in container...');
             this.terminal.open(container);
+            console.log('Terminal: Terminal opened successfully');
             
             // Fit terminal to container
             if (this.fitAddon) {
+                console.log('Terminal: Fitting terminal to container...');
                 this.fitAddon.fit();
+                console.log('Terminal: Terminal fitted to container');
+            } else {
+                console.warn('Terminal: FitAddon not available');
             }
             
             // Connect to backend
+            console.log('Terminal: Connecting to backend...');
             this.connect();
             
             // Handle container resize
@@ -97,10 +115,11 @@ class TerminalComponent {
             });
             resizeObserver.observe(container);
             
-            console.log('Terminal mounted successfully');
+            console.log('Terminal: Mount completed successfully');
             
         } catch (error) {
-            console.error('Failed to mount terminal:', error);
+            console.error('Terminal: Failed to mount terminal:', error);
+            throw error;
         }
     }
     

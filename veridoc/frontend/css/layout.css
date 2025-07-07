@@ -425,6 +425,8 @@
 
 .terminal-container {
     flex: 1;
+    padding: var(--spacing-sm);
+    box-sizing: border-box;
 }
 
 /* Loading overlay */

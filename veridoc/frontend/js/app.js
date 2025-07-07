@@ -263,6 +263,11 @@ class VeriDocApp {
             this.toggleTerminal();
         });
 
+        // Terminal reconnect button
+        document.getElementById('terminal-reconnect')?.addEventListener('click', () => {
+            this.reconnectTerminal();
+        });
+
         // Settings and help buttons
         document.getElementById('settings-btn')?.addEventListener('click', () => {
             this.showSettings();
@@ -609,6 +614,33 @@ class VeriDocApp {
         
         // Reinitialize
         this.initializeTerminal();
+    }
+    
+    /**
+     * Reconnect terminal (for use with reconnect button)
+     */
+    reconnectTerminal() {
+        console.log('App: Reconnecting terminal...');
+        
+        const terminalContainer = document.getElementById('terminal-container');
+        if (!terminalContainer) {
+            console.error('App: Terminal container not found');
+            return;
+        }
+        
+        // Show loading state
+        terminalContainer.innerHTML = `
+            <div style="padding: var(--spacing-lg); text-align: center; color: var(--text-secondary);">
+                <div style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-md);">
+                    🔄 Reconnecting Terminal...
+                </div>
+            </div>
+        `;
+        
+        // Reset and reinitialize after a short delay
+        setTimeout(() => {
+            this.resetTerminal();
+        }, 500);
     }
     
     /**
