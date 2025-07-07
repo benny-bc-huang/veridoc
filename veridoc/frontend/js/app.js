@@ -61,6 +61,10 @@ class VeriDocApp {
     initializeComponents() {
         console.log('App: Initializing components...');
         
+        // Initialize theme manager
+        this.components.themeManager = new ThemeManager();
+        console.log('App: Theme manager initialized');
+        
         // Initialize URL handler
         this.components.urlHandler = new UrlHandler();
         console.log('App: URL handler initialized');
@@ -254,6 +258,16 @@ class VeriDocApp {
             this.toggleFilesPanel();
         });
 
+        // Terminal toggle button
+        document.getElementById('terminal-toggle')?.addEventListener('click', () => {
+            this.toggleTerminal();
+        });
+
+        // Terminal reconnect button
+        document.getElementById('terminal-reconnect')?.addEventListener('click', () => {
+            this.reconnectTerminal();
+        });
+
         // Settings and help buttons
         document.getElementById('settings-btn')?.addEventListener('click', () => {
             this.showSettings();
@@ -436,61 +450,7 @@ class VeriDocApp {
         this.toggleFilesPanel();
     }
 
-    /**
-     * Toggle terminal panel
-     */
-    toggleTerminal() {
-        const terminalPanel = document.getElementById('terminal-panel');
-        const terminalHandle = document.getElementById('terminal-resize-handle');
-        
-        if (terminalPanel) {
-            const isVisible = terminalPanel.style.display !== 'none';
-            const newDisplay = isVisible ? 'none' : 'flex';
-            
-            terminalPanel.style.display = newDisplay;
-            if (terminalHandle) {
-                terminalHandle.style.display = newDisplay;
-            }
-            
-            // Initialize terminal placeholder if showing for the first time
-            if (newDisplay === 'flex') {
-                this.initializeTerminalPlaceholder();
-            }
-        }
-    }
 
-    /**
-     * Initialize terminal (Phase 3 feature)
-     */
-    initializeTerminalPlaceholder() {
-        const container = document.getElementById('terminal-container');
-        if (!container) return;
-        
-        // Initialize terminal if not already done
-        if (!this.components.terminal) {
-            try {
-                this.components.terminal = new TerminalComponent();
-                this.components.terminal.mount(container);
-                console.log('Terminal component initialized');
-            } catch (error) {
-                console.error('Failed to initialize terminal:', error);
-                // Fallback to placeholder
-                container.innerHTML = `
-                    <div style="padding: var(--spacing-lg); text-align: center; color: var(--text-secondary);">
-                        <div style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-md);">
-                            ⚠️ Terminal Error
-                        </div>
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <strong>Failed to initialize terminal</strong>
-                        </div>
-                        <div style="font-size: var(--font-size-sm); line-height: 1.6;">
-                            ${error.message || 'Unknown error'}
-                        </div>
-                    </div>
-                `;
-            }
-        }
-    }
 
     /**
      * Toggle hidden files visibility
@@ -507,8 +467,18 @@ class VeriDocApp {
     updateHiddenToggleButton(showHidden) {
         const toggleBtn = document.getElementById('toggle-hidden-btn');
         if (toggleBtn) {
-            toggleBtn.textContent = showHidden ? '🙈' : '👁️';
-            toggleBtn.title = showHidden ? 'Hide dot files' : 'Show dot files';
+            const iconSpan = toggleBtn.querySelector('.btn-icon');
+            const textSpan = toggleBtn.querySelector('.btn-text');
+            
+            if (iconSpan && textSpan) {
+                iconSpan.textContent = showHidden ? '🙈' : '👁️';
+                textSpan.textContent = showHidden ? 'Hide Hidden' : 'Show Hidden';
+                toggleBtn.title = showHidden ? 'Hide dot files' : 'Show dot files';
+            } else {
+                // Fallback for old structure
+                toggleBtn.textContent = showHidden ? '🙈' : '👁️';
+                toggleBtn.title = showHidden ? 'Hide dot files' : 'Show dot files';
+            }
         }
     }
 
@@ -537,11 +507,333 @@ class VeriDocApp {
     }
 
     /**
+     * Toggle terminal panel
+     */
+    toggleTerminal() {
+        const terminalPanel = document.getElementById('terminal-panel');
+        const terminalResizeHandle = document.getElementById('terminal-resize-handle');
+        const terminalToggleBtn = document.getElementById('terminal-toggle');
+        
+        if (!terminalPanel || !terminalResizeHandle) return;
+        
+        const isVisible = terminalPanel.style.display !== 'none';
+        
+        if (isVisible) {
+            // Hide terminal
+            terminalPanel.style.display = 'none';
+            terminalResizeHandle.style.display = 'none';
+            
+            // Disconnect terminal if connected
+            if (this.components.terminal) {
+                this.components.terminal.disconnect();
+            }
+            
+            // Update button state
+            if (terminalToggleBtn) {
+                terminalToggleBtn.classList.remove('active');
+            }
+        } else {
+            // Show terminal
+            terminalPanel.style.display = 'flex';
+            terminalResizeHandle.style.display = 'block';
+            
+            // Initialize terminal if not already initialized
+            if (!this.components.terminal) {
+                this.initializeTerminal();
+            } else {
+                // Reconnect terminal
+                this.components.terminal.connect();
+            }
+            
+            // Update button state
+            if (terminalToggleBtn) {
+                terminalToggleBtn.classList.add('active');
+            }
+        }
+    }
+
+    /**
+     * Initialize terminal component
+     */
+    initializeTerminal() {
+        const terminalContainer = document.getElementById('terminal-container');
+        
+        if (!terminalContainer) {
+            console.error('App: Terminal container not found');
+            return;
+        }
+        
+        if (!window.TerminalComponent) {
+            console.error('App: TerminalComponent not available');
+            this.showTerminalError(terminalContainer, 'TerminalComponent class not loaded');
+            return;
+        }
+        
+        // Skip if already initialized
+        if (this.components.terminal) {
+            console.log('App: Terminal already initialized');
+            return;
+        }
+        
+        try {
+            // Create terminal component
+            this.components.terminal = new TerminalComponent();
+            
+            // Mount to container
+            this.components.terminal.mount(terminalContainer);
+            
+            console.log('App: Terminal component initialized and mounted successfully');
+            
+        } catch (error) {
+            console.error('App: Failed to initialize terminal:', error);
+            this.showTerminalError(terminalContainer, error.message || 'Unknown terminal initialization error');
+        }
+    }
+    
+    /**
+     * Reset and reinitialize terminal
+     */
+    resetTerminal() {
+        console.log('App: Resetting terminal...');
+        
+        // Disconnect existing terminal
+        if (this.components.terminal) {
+            try {
+                this.components.terminal.disconnect();
+            } catch (error) {
+                console.warn('App: Error disconnecting terminal:', error);
+            }
+            this.components.terminal = null;
+        }
+        
+        // Clear container
+        const terminalContainer = document.getElementById('terminal-container');
+        if (terminalContainer) {
+            terminalContainer.innerHTML = '';
+        }
+        
+        // Reinitialize
+        this.initializeTerminal();
+    }
+    
+    /**
+     * Reconnect terminal (for use with reconnect button)
+     */
+    reconnectTerminal() {
+        console.log('App: Reconnecting terminal...');
+        
+        const terminalContainer = document.getElementById('terminal-container');
+        if (!terminalContainer) {
+            console.error('App: Terminal container not found');
+            return;
+        }
+        
+        // Show loading state
+        terminalContainer.innerHTML = `
+            <div style="padding: var(--spacing-lg); text-align: center; color: var(--text-secondary);">
+                <div style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-md);">
+                    🔄 Reconnecting Terminal...
+                </div>
+            </div>
+        `;
+        
+        // Reset and reinitialize after a short delay
+        setTimeout(() => {
+            this.resetTerminal();
+        }, 500);
+    }
+    
+    /**
+     * Show terminal error message
+     */
+    showTerminalError(container, errorMessage) {
+        container.innerHTML = `
+            <div style="padding: var(--spacing-lg); text-align: center; color: var(--text-secondary);">
+                <div style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-md);">
+                    ⚠️ Terminal Error
+                </div>
+                <div style="margin-bottom: var(--spacing-md);">
+                    <strong>Failed to initialize terminal</strong>
+                </div>
+                <div style="font-size: var(--font-size-sm); line-height: 1.6; margin-bottom: var(--spacing-md);">
+                    ${errorMessage}
+                </div>
+                <button class="panel-btn" onclick="window.veriDocApp?.resetTerminal?.()">
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-text">Retry</span>
+                </button>
+            </div>
+        `;
+    }
+
+    /**
      * Show settings dialog
      */
-    showSettings() {
-        // TODO: Implement settings dialog
-        console.log('Settings dialog not yet implemented');
+    async showSettings() {
+        // Check search index status first
+        let searchStatus = null;
+        try {
+            const response = await window.apiClient.request('/search/status');
+            searchStatus = response;
+        } catch (error) {
+            console.error('Failed to get search status:', error);
+        }
+
+        const settingsContent = `
+            <div class="settings-dialog">
+                <div class="settings-header">
+                    <h2>Settings</h2>
+                    <button class="panel-btn panel-btn-icon-only" onclick="this.closest('.settings-overlay').remove()">×</button>
+                </div>
+                <div class="settings-content">
+                    <div class="settings-section">
+                        <h3>🎨 Appearance</h3>
+                        <div class="settings-item">
+                            <label class="settings-label">
+                                <span>Theme</span>
+                                <select id="settings-theme" class="settings-select">
+                                    <option value="dark" ${localStorage.getItem('veridoc-theme') !== 'light' ? 'selected' : ''}>Dark</option>
+                                    <option value="light" ${localStorage.getItem('veridoc-theme') === 'light' ? 'selected' : ''}>Light</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>🔍 Search</h3>
+                        <div class="settings-item">
+                            <label class="settings-label">
+                                <span>Enable Fuzzy Search</span>
+                                <input type="checkbox" id="settings-fuzzy" class="settings-checkbox" 
+                                    ${localStorage.getItem('veridoc-fuzzy-search') !== 'false' ? 'checked' : ''}>
+                            </label>
+                        </div>
+                        <div class="settings-item">
+                            <label class="settings-label">
+                                <span>Fuzzy Match Threshold</span>
+                                <input type="range" id="settings-fuzzy-threshold" class="settings-range" 
+                                    min="0.5" max="1.0" step="0.1" 
+                                    value="${localStorage.getItem('veridoc-fuzzy-threshold') || '0.7'}">
+                                <span id="fuzzy-threshold-value">${localStorage.getItem('veridoc-fuzzy-threshold') || '0.7'}</span>
+                            </label>
+                        </div>
+                        <div class="settings-item">
+                            <div class="search-index-status">
+                                <span>Search Index Status: </span>
+                                <span class="${searchStatus?.indexed ? 'text-success' : 'text-warning'}">
+                                    ${searchStatus?.indexed ? `✓ Indexed (${searchStatus.statistics.index.total_files} files)` : '⚠️ Not indexed'}
+                                </span>
+                            </div>
+                            <button class="settings-button" id="rebuild-index-btn">Rebuild Search Index</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>📁 File Display</h3>
+                        <div class="settings-item">
+                            <label class="settings-label">
+                                <span>Show Hidden Files</span>
+                                <input type="checkbox" id="settings-hidden-files" class="settings-checkbox" 
+                                    ${this.components.fileTree?.showHidden ? 'checked' : ''}>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>💻 Terminal</h3>
+                        <div class="settings-item">
+                            <label class="settings-label">
+                                <span>Default Shell</span>
+                                <input type="text" id="settings-shell" class="settings-input" 
+                                    value="${localStorage.getItem('veridoc-shell') || '/bin/bash'}" 
+                                    placeholder="/bin/bash">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-footer">
+                    <button class="settings-button settings-button-primary" id="settings-save">Save</button>
+                    <button class="settings-button" onclick="this.closest('.settings-overlay').remove()">Cancel</button>
+                </div>
+            </div>
+        `;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'settings-overlay';
+        overlay.innerHTML = settingsContent;
+        document.body.appendChild(overlay);
+
+        // Add event listeners
+        this.bindSettingsEvents(overlay);
+    }
+
+    /**
+     * Bind settings dialog events
+     */
+    bindSettingsEvents(overlay) {
+        // Theme change
+        const themeSelect = overlay.querySelector('#settings-theme');
+        themeSelect?.addEventListener('change', (e) => {
+            const theme = e.target.value;
+            this.components.themeManager.currentTheme = theme;
+            this.components.themeManager.applyTheme(theme);
+            localStorage.setItem('veridoc-theme', theme);
+        });
+
+        // Fuzzy search settings
+        const fuzzyCheckbox = overlay.querySelector('#settings-fuzzy');
+        fuzzyCheckbox?.addEventListener('change', (e) => {
+            localStorage.setItem('veridoc-fuzzy-search', e.target.checked);
+        });
+
+        const fuzzyThreshold = overlay.querySelector('#settings-fuzzy-threshold');
+        const thresholdValue = overlay.querySelector('#fuzzy-threshold-value');
+        fuzzyThreshold?.addEventListener('input', (e) => {
+            thresholdValue.textContent = e.target.value;
+            localStorage.setItem('veridoc-fuzzy-threshold', e.target.value);
+        });
+
+        // Rebuild index button
+        const rebuildBtn = overlay.querySelector('#rebuild-index-btn');
+        rebuildBtn?.addEventListener('click', async () => {
+            rebuildBtn.disabled = true;
+            rebuildBtn.textContent = 'Rebuilding...';
+            
+            try {
+                await window.apiClient.request('/search/rebuild', { method: 'POST' });
+                rebuildBtn.textContent = 'Index Rebuilt!';
+                setTimeout(() => {
+                    rebuildBtn.textContent = 'Rebuild Search Index';
+                    rebuildBtn.disabled = false;
+                }, 2000);
+            } catch (error) {
+                console.error('Failed to rebuild index:', error);
+                rebuildBtn.textContent = 'Rebuild Failed';
+                rebuildBtn.disabled = false;
+            }
+        });
+
+        // Hidden files toggle
+        const hiddenFilesCheckbox = overlay.querySelector('#settings-hidden-files');
+        hiddenFilesCheckbox?.addEventListener('change', (e) => {
+            if (this.components.fileTree) {
+                this.components.fileTree.showHidden = e.target.checked;
+                this.components.fileTree.refresh();
+            }
+        });
+
+        // Save button
+        const saveBtn = overlay.querySelector('#settings-save');
+        saveBtn?.addEventListener('click', () => {
+            // Save shell preference
+            const shellInput = overlay.querySelector('#settings-shell');
+            if (shellInput) {
+                localStorage.setItem('veridoc-shell', shellInput.value);
+            }
+            
+            // Close dialog
+            overlay.remove();
+        });
     }
 
     /**

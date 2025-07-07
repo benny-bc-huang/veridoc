@@ -93,10 +93,53 @@
 }
 
 .header-btn {
-    width: 32px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     height: 32px;
-    padding: 0;
-    font-size: var(--font-size-base);
+    padding: 0 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+}
+
+.header-btn:hover {
+    background-color: var(--accent-blue);
+    color: white;
+    border-color: var(--accent-blue);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.header-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header-btn.active {
+    background-color: var(--accent-blue);
+    color: white;
+    border-color: var(--accent-blue);
+}
+
+.header-btn.active:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.header-btn .btn-icon {
+    font-size: 16px;
+}
+
+.header-btn .btn-text {
+    font-size: var(--font-size-sm);
 }
 
 /* Main content - Fill remaining space */
@@ -155,11 +198,12 @@
     min-width: 0;
 }
 
-/* Content area - contains viewer and terminal side by side */
-.content-area {
+/* Content viewer - displays file content */
+.content-viewer {
     flex: 1;
     display: flex;
-    min-height: 0;
+    flex-direction: column;
+    min-width: 0;
 }
 
 /* Panel headers */
@@ -183,20 +227,61 @@
 }
 
 .panel-btn {
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+}
+
+.panel-btn:hover {
+    background: var(--accent-blue);
+    color: white;
+    border-color: var(--accent-blue);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.panel-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .panel-btn.active {
     background: var(--accent-blue);
     color: white;
+    border-color: var(--accent-blue);
 }
 
 .panel-btn.active:hover {
-    background: var(--accent-blue);
-    opacity: 0.9;
+    background: #0056b3;
+    border-color: #0056b3;
+}
+
+.panel-btn-icon-only {
+    padding: 0;
+    width: 28px;
+    min-width: 28px;
+}
+
+.panel-btn .btn-icon {
+    font-size: 14px;
+}
+
+.panel-btn .btn-text {
+    font-size: var(--font-size-xs);
 }
 
 .panel-controls {
@@ -236,13 +321,6 @@
     overflow-x: hidden;
     padding: 0 var(--spacing-sm) var(--spacing-sm) var(--spacing-sm);
     min-height: 0;
-}
-
-.content-viewer {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
 }
 
 .content-display, .content-markdown {
@@ -318,10 +396,12 @@
 
 /* Terminal resize handle */
 .terminal-resize-handle {
-    width: 4px;
-    background: var(--border);
+    width: 8px; /* Wider for better visual separation */
+    background: var(--bg-primary); /* Subtle background */
     cursor: col-resize;
-    transition: background-color var(--transition-fast);
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    position: relative;
 }
 
 .terminal-resize-handle:hover {
@@ -332,15 +412,34 @@
     background: var(--accent-blue);
 }
 
-/* Terminal panel - side by side with content viewer */
+/* Add subtle resize indicator */
+.terminal-resize-handle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 20px;
+    background: var(--text-secondary);
+    opacity: 0.3;
+    transition: opacity var(--transition-fast);
+}
+
+.terminal-resize-handle:hover::after {
+    opacity: 0.8;
+}
+
+/* Terminal panel - peer to content panel */
 .terminal-panel {
     width: 400px;
     background: var(--bg-secondary);
-    border-left: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     min-width: 200px;
     max-width: 800px;
+    flex-shrink: 0;
+    margin-left: var(--spacing-sm); /* Add subtle gutter */
 }
 
 .terminal-container {
@@ -417,5 +516,27 @@
     
     .welcome-features {
         grid-template-columns: 1fr;
+    }
+    
+    /* Hide button text on small screens to save space */
+    .panel-btn .btn-text {
+        display: none;
+    }
+    
+    .panel-btn {
+        min-width: 28px;
+        padding: 0;
+    }
+}
+
+/* Hide text on narrow panels */
+@media (max-width: 1200px) {
+    .panel-controls .panel-btn .btn-text {
+        display: none;
+    }
+    
+    .panel-controls .panel-btn {
+        min-width: 28px;
+        padding: 0;
     }
 }

@@ -16,6 +16,8 @@ import asyncio
 import aiofiles
 from concurrent.futures import ThreadPoolExecutor
 
+from .fuzzy_search import FuzzyMatcher, enhanced_fuzzy_match
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,13 +48,13 @@ class SearchIndex:
     
     def __init__(self, base_path: str, index_file: str = "search_index.json"):
         self.base_path = Path(base_path)
-        self.index_file = self.base_path / ".veridoc" / index_file
+        self.index_file_path = self.base_path / ".veridoc" / index_file
         self.index: Dict[str, IndexEntry] = {}
         self.word_to_files: Dict[str, Set[str]] = defaultdict(set)
         self.executor = ThreadPoolExecutor(max_workers=4)
         
         # Create index directory
-        self.index_file.parent.mkdir(parents=True, exist_ok=True)
+        self.index_file_path.parent.mkdir(parents=True, exist_ok=True)
         
         # Load existing index
         self.load_index()
@@ -211,7 +213,11 @@ class SearchIndex:
             batch = files_to_index[i:i + batch_size]
             
             # Process batch concurrently
-            tasks = [self.index_file(file_path) for file_path in batch]
+            tasks = []
+            for file_path in batch:
+                # Call the index_file method (not the self.index_file attribute)
+                task = self.index_file(file_path)  # This calls the method
+                tasks.append(task)
             results = await asyncio.gather(*tasks, return_exceptions=True)
             
             # Count successful indexing
@@ -266,13 +272,16 @@ class SearchIndex:
         elapsed = time.time() - start_time
         logger.info(f"Index update complete: {updated_count} files updated in {elapsed:.2f}s")
     
-    def search(self, query: str, limit: int = 50) -> List[SearchResult]:
+    def search(self, query: str, limit: int = 50, fuzzy: bool = True, fuzzy_threshold: float = 0.7) -> List[SearchResult]:
         """Search the index for matching files."""
         if not query or not query.strip():
             return []
         
         # Tokenize query
         query_tokens = self._tokenize_content(query.lower())
+        
+        # Initialize fuzzy matcher if enabled
+        fuzzy_matcher = FuzzyMatcher(threshold=fuzzy_threshold) if fuzzy else None
         
         # Find candidate files
         candidate_files = set()
@@ -294,6 +303,17 @@ class SearchIndex:
                         candidate_files.update(files)
                         for file_path in files:
                             token_matches[file_path] = token_matches.get(file_path, 0) + 0.5
+            
+            # Fuzzy matches if enabled
+            if fuzzy_matcher and len(token) >= 3:
+                for indexed_token in self.word_to_files:
+                    fuzzy_score = fuzzy_matcher.match(token, indexed_token)
+                    if fuzzy_score is not None:
+                        files = self.word_to_files[indexed_token]
+                        candidate_files.update(files)
+                        for file_path in files:
+                            # Weight fuzzy matches based on their score
+                            token_matches[file_path] = token_matches.get(file_path, 0) + (0.7 * fuzzy_score)
         
         # Score and rank results
         results = []
@@ -304,10 +324,18 @@ class SearchIndex:
                 # Calculate score
                 score = token_matches.get(file_path, 0)
                 
-                # Boost score for exact query matches in filename
+                # Boost score for filename matches
                 filename = os.path.basename(file_path).lower()
-                if query.lower() in filename:
+                query_lower = query.lower()
+                
+                # Exact substring match in filename
+                if query_lower in filename:
                     score += 2.0
+                elif fuzzy_matcher:
+                    # Fuzzy match on filename
+                    filename_fuzzy_score = enhanced_fuzzy_match(query_lower, filename)
+                    if filename_fuzzy_score >= fuzzy_threshold:
+                        score += 1.5 * filename_fuzzy_score
                 
                 # Boost score for file type preferences
                 if file_path.endswith(('.md', '.txt', '.rst')):
@@ -351,12 +379,12 @@ class SearchIndex:
                 }
             
             # Write to temporary file first
-            temp_file = self.index_file.with_suffix('.tmp')
+            temp_file = self.index_file_path.with_suffix('.tmp')
             async with aiofiles.open(temp_file, 'w') as f:
                 await f.write(json.dumps(index_data, indent=2))
             
             # Atomic move
-            temp_file.replace(self.index_file)
+            temp_file.replace(self.index_file_path)
             
             logger.debug(f"Index saved: {len(self.index)} files")
             
@@ -365,11 +393,11 @@ class SearchIndex:
     
     def load_index(self):
         """Load index from disk."""
-        if not self.index_file.exists():
+        if not self.index_file_path.exists():
             return
         
         try:
-            with open(self.index_file, 'r') as f:
+            with open(self.index_file_path, 'r') as f:
                 index_data = json.load(f)
             
             # Load files
@@ -404,7 +432,7 @@ class SearchIndex:
             'total_tokens': len(self.word_to_files),
             'average_tokens_per_file': sum(len(entry.tokens) for entry in self.index.values()) / max(len(self.index), 1),
             'total_content_size': sum(entry.file_size for entry in self.index.values()),
-            'index_file_size': self.index_file.stat().st_size if self.index_file.exists() else 0
+            'index_file_size': self.index_file_path.stat().st_size if self.index_file_path.exists() else 0
         }
 
 
@@ -503,8 +531,13 @@ class OptimizedSearchEngine:
     async def search(self, 
                     query: str, 
                     search_type: str = "both",
-                    limit: int = 50) -> List[Dict[str, Any]]:
+                    limit: int = 50,
+                    fuzzy: bool = True,
+                    fuzzy_threshold: float = 0.7) -> List[Dict[str, Any]]:
         """Search with caching and indexing."""
+        
+        # Create cache key that includes fuzzy parameters
+        cache_key = f"{query}:{limit}:{fuzzy}:{fuzzy_threshold}"
         
         # Check cache first
         cached_results = self.cache.get(query, limit)
@@ -513,17 +546,31 @@ class OptimizedSearchEngine:
         
         # Perform search
         if search_type in ["content", "both"]:
-            results = self.index.search(query, limit)
+            results = self.index.search(query, limit, fuzzy=fuzzy, fuzzy_threshold=fuzzy_threshold)
         else:
             # Filename search only
             results = []
             query_lower = query.lower()
+            fuzzy_matcher = FuzzyMatcher(threshold=fuzzy_threshold) if fuzzy else None
+            
             for file_path in self.index.index:
-                if query_lower in os.path.basename(file_path).lower():
+                filename = os.path.basename(file_path).lower()
+                score = 0.0
+                
+                # Exact substring match
+                if query_lower in filename:
+                    score = 1.0
+                elif fuzzy_matcher:
+                    # Fuzzy filename match
+                    fuzzy_score = enhanced_fuzzy_match(query_lower, filename)
+                    if fuzzy_score >= fuzzy_threshold:
+                        score = fuzzy_score
+                
+                if score > 0:
                     entry = self.index.index[file_path]
                     result = SearchResult(
                         file_path=file_path,
-                        score=1.0,
+                        score=score,
                         matches=[],
                         file_size=entry.file_size,
                         last_modified=entry.last_modified,
@@ -531,7 +578,8 @@ class OptimizedSearchEngine:
                     )
                     results.append(result)
             
-            results.sort(key=lambda x: x.file_path)
+            # Sort by score descending, then by file path
+            results.sort(key=lambda x: (-x.score, x.file_path))
             results = results[:limit]
         
         # Cache results
