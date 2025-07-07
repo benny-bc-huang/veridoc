@@ -195,7 +195,9 @@ class SearchComponent {
 
             const results = await this.api.search(query, {
                 type: 'both',
-                limit: 50
+                limit: 50,
+                fuzzy: localStorage.getItem('veridoc-fuzzy-search') !== 'false',
+                fuzzy_threshold: parseFloat(localStorage.getItem('veridoc-fuzzy-threshold') || '0.7')
             });
 
             this.searchResults = results.results || [];

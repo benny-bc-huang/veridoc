@@ -139,7 +139,9 @@ class ApiClient {
             type: options.type || 'both',
             path: options.path || '',
             extensions: options.extensions || '',
-            limit: options.limit || 50
+            limit: options.limit || 50,
+            fuzzy: options.fuzzy !== false ? 'true' : 'false',
+            fuzzy_threshold: options.fuzzy_threshold || 0.7
         });
 
         // Don't cache search results as they change frequently

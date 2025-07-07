@@ -60,7 +60,7 @@ Thank you for your interest in contributing to VeriDoc! This guide will help you
 ## Testing Notes
 
 - **Unit tests**: Always required and must pass
-- **Integration tests**: Currently disabled due to dependency conflicts (httpx/FastAPI versions)
+- **Integration tests**: Always required and must pass
 - **Local testing**: Please test the application manually in your browser
 
 ## Code Style

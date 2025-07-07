@@ -77,6 +77,13 @@ async def lifespan(app: FastAPI):
     # Startup
     await performance_monitor.start_monitoring()
     logger.info("Performance monitoring started")
+    
+    # Build initial search index if it doesn't exist
+    if not search_engine.index.index:
+        logger.info("Building initial search index...")
+        await search_engine.rebuild_index()
+        logger.info("Initial search index built")
+    
     await search_engine.start_background_updates()
     logger.info("Search engine background updates started")
     yield
@@ -246,93 +253,96 @@ async def get_file_info(path: str = Query(..., description="Relative file path")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@app.get("/api/search/status")
+async def get_search_status():
+    """Get search index status and statistics"""
+    try:
+        stats = search_engine.get_statistics()
+        return {
+            "indexed": stats['index']['total_files'] > 0,
+            "statistics": stats
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/search/rebuild")
+async def rebuild_search_index():
+    """Rebuild the search index"""
+    try:
+        await search_engine.rebuild_index()
+        return {"status": "success", "message": "Search index rebuilt"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/search")
 async def search_files(
     q: str = Query(..., description="Search query"),
     type: str = Query("both", description="Search type: filename, content, both"),
     path: str = Query("", description="Limit search to specific directory"),
     extensions: str = Query("", description="Comma-separated file extensions"),
-    limit: int = Query(50, ge=1, le=200, description="Maximum results")
+    limit: int = Query(50, ge=1, le=200, description="Maximum results"),
+    fuzzy: bool = Query(True, description="Enable fuzzy matching"),
+    fuzzy_threshold: float = Query(0.7, ge=0.0, le=1.0, description="Fuzzy match threshold (0-1)")
 ):
-    """Search files and content"""
+    """Search files and content with fuzzy matching support"""
     try:
-        # Simple search implementation for MVP
-        results = []
-        search_path = security_manager.validate_path(path if path else "/")
+        import time
+        start_time = time.time()
         
-        # Get all files recursively
-        for file_path in search_path.rglob("*"):
-            if file_path.is_file():
-                rel_path = str(file_path.relative_to(config.base_path))
-                filename = file_path.name
-                
-                # Filter by extensions if specified
-                if extensions:
-                    ext_list = [ext.strip().lower() for ext in extensions.split(",")]
-                    file_ext = file_path.suffix.lower()
-                    if file_ext not in ext_list and file_ext.lstrip('.') not in ext_list:
-                        continue
-                
-                score = 0
-                match_type = None
-                snippet = None
-                line_number = None
-                
-                # Filename search
-                if type in ["filename", "both"] and q.lower() in filename.lower():
-                    filename_lower = filename.lower()
-                    query_lower = q.lower()
-                    
-                    if filename_lower == query_lower:
-                        # Exact filename match gets perfect score
-                        score = 1.0
-                    elif filename_lower.startswith(query_lower):
-                        # Filename starts with query gets high score
-                        score = 0.9
-                    else:
-                        # Filename contains query gets good score
-                        score = 0.7
-                    match_type = "filename"
-                
-                # Content search for text files
-                if type in ["content", "both"] and file_handler._is_text_file(file_path):
-                    try:
-                        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-                            lines = f.readlines()
-                            for i, line in enumerate(lines):
-                                if q.lower() in line.lower():
-                                    # Only update if no filename match or content match is better
-                                    content_score = 0.6 if line.strip().lower() == q.lower() else 0.4
-                                    if not match_type or (match_type == "content" and content_score > score) or (match_type == "filename" and score < 0.8):
-                                        score = max(score, content_score) if match_type == "filename" else content_score
-                                        match_type = "content" if not match_type or match_type == "content" else match_type
-                                        snippet = line.strip()[:100]
-                                        line_number = i + 1
-                                    break
-                    except (UnicodeDecodeError, PermissionError):
-                        continue
-                
-                if match_type:
-                    results.append({
-                        "path": rel_path,
-                        "type": "file",
-                        "match_type": match_type,
-                        "score": score,
-                        "snippet": snippet,
-                        "line_number": line_number
-                    })
-                
-                if len(results) >= limit:
-                    break
+        # Use the OptimizedSearchEngine
+        search_results = await search_engine.search(
+            query=q,
+            search_type=type,
+            limit=limit,
+            fuzzy=fuzzy,
+            fuzzy_threshold=fuzzy_threshold
+        )
         
-        # Sort by score descending
-        results.sort(key=lambda x: x["score"], reverse=True)
+        # Filter by path if specified
+        if path:
+            try:
+                search_path = security_manager.validate_path(path)
+                relative_search_path = str(search_path.relative_to(config.base_path))
+                search_results = [
+                    result for result in search_results
+                    if result['file_path'].startswith(relative_search_path)
+                ]
+            except ValueError:
+                # Invalid path, return empty results
+                search_results = []
+        
+        # Filter by extensions if specified
+        if extensions:
+            ext_list = [ext.strip().lower() for ext in extensions.split(",")]
+            search_results = [
+                result for result in search_results
+                if any(result['file_path'].lower().endswith(ext if ext.startswith('.') else f'.{ext}') 
+                      for ext in ext_list)
+            ]
+        
+        # Transform results to match expected format
+        formatted_results = []
+        for result in search_results[:limit]:
+            formatted_results.append({
+                "path": result['file_path'],
+                "type": "file",
+                "match_type": "both",  # The search engine searches both filename and content
+                "score": result['score'],
+                "snippet": None,  # TODO: Extract snippets from matches
+                "line_number": None,
+                "file_size": result.get('file_size', 0),
+                "last_modified": result.get('last_modified', 0)
+            })
+        
+        elapsed_ms = int((time.time() - start_time) * 1000)
         
         return {
             "query": q,
-            "results": results,
-            "total_results": len(results),
-            "search_time_ms": 0  # TODO: Implement timing
+            "results": formatted_results,
+            "total_results": len(formatted_results),
+            "search_time_ms": elapsed_ms,
+            "fuzzy_enabled": fuzzy,
+            "fuzzy_threshold": fuzzy_threshold
         }
         
     except Exception as e:
