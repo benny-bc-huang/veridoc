@@ -396,11 +396,12 @@
 
 /* Terminal resize handle */
 .terminal-resize-handle {
-    width: 4px;
-    background: var(--border);
+    width: 8px; /* Wider for better visual separation */
+    background: var(--bg-primary); /* Subtle background */
     cursor: col-resize;
-    transition: background-color var(--transition-fast);
+    transition: all var(--transition-fast);
     flex-shrink: 0;
+    position: relative;
 }
 
 .terminal-resize-handle:hover {
@@ -411,22 +412,38 @@
     background: var(--accent-blue);
 }
 
+/* Add subtle resize indicator */
+.terminal-resize-handle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 20px;
+    background: var(--text-secondary);
+    opacity: 0.3;
+    transition: opacity var(--transition-fast);
+}
+
+.terminal-resize-handle:hover::after {
+    opacity: 0.8;
+}
+
 /* Terminal panel - peer to content panel */
 .terminal-panel {
     width: 400px;
     background: var(--bg-secondary);
-    border-left: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     min-width: 200px;
     max-width: 800px;
     flex-shrink: 0;
+    margin-left: var(--spacing-sm); /* Add subtle gutter */
 }
 
 .terminal-container {
     flex: 1;
-    padding: var(--spacing-sm);
-    box-sizing: border-box;
 }
 
 /* Loading overlay */

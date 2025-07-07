@@ -139,6 +139,11 @@ class TerminalComponent {
                 this.reconnectAttempts = 0;
                 console.log('Terminal WebSocket connected');
                 
+                // Send a test message to see if backend is working
+                if (this.terminal) {
+                    this.terminal.write('\r\n🔥 Terminal connected! Type a command...\r\n');
+                }
+                
                 // Send initial terminal size
                 if (this.terminal && this.websocket.readyState === WebSocket.OPEN) {
                     this.websocket.send(JSON.stringify({
