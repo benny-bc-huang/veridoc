@@ -37,6 +37,8 @@ VeriDoc is a lightweight, open-source documentation browser designed for AI-assi
 
 ```bash
 pip install veridoc
+or
+pipx install veridoc
 ```
 
 ### Install from Source
